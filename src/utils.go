@@ -63,10 +63,8 @@ func createZipFromDir(sourceDir, outZipPath string) error {
 	if err != nil {
 		return fmt.Errorf("create output zip: %w", err)
 	}
-	defer out.Close()
 
 	zw := zip.NewWriter(out)
-	defer zw.Close()
 
 	walkErr := filepath.WalkDir(sourceDir, func(path string, d fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
@@ -91,19 +89,27 @@ func createZipFromDir(sourceDir, outZipPath string) error {
 		if err != nil {
 			return fmt.Errorf("open source file %s: %w", path, err)
 		}
-		defer f.Close()
 
-		if _, err := io.Copy(w, f); err != nil {
-			return fmt.Errorf("write zip entry %s: %w", zipPath, err)
+		_, copyErr := io.Copy(w, f)
+		closeErr := f.Close()
+
+		if copyErr != nil {
+			return fmt.Errorf("write zip entry %s: %w", zipPath, copyErr)
+		}
+		if closeErr != nil {
+			return fmt.Errorf("close source file %s: %w", path, closeErr)
 		}
 
 		return nil
 	})
 	if walkErr != nil {
+		zw.Close()
+		out.Close()
 		return walkErr
 	}
 
 	if err := zw.Close(); err != nil {
+		out.Close()
 		return fmt.Errorf("close zip writer: %w", err)
 	}
 

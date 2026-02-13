@@ -41,10 +41,10 @@ func TestBasicUpdate(t *testing.T) {
 	}
 
 	chartXML := readZipEntry(t, outputPath, "word/charts/chart1.xml")
-	if !strings.Contains(chartXML, `<c:v>Device A</c:v>`) {
+	if !strings.Contains(chartXML, `<v>Device A</v>`) && !strings.Contains(chartXML, `<c:v>Device A</c:v>`) {
 		t.Fatalf("chart xml missing updated category")
 	}
-	if !strings.Contains(chartXML, `<c:v>8</c:v>`) {
+	if !strings.Contains(chartXML, `<v>8</v>`) && !strings.Contains(chartXML, `<c:v>8</c:v>`) {
 		t.Fatalf("chart xml missing updated value")
 	}
 
@@ -166,10 +166,10 @@ func TestUpdateSpecificChartInMultiChartDocx(t *testing.T) {
 
 	chart1XML := readZipEntry(t, outputPath, "word/charts/chart1.xml")
 	chart2XML := readZipEntry(t, outputPath, "word/charts/chart2.xml")
-	if !strings.Contains(chart1XML, "<c:v>Old 1</c:v>") {
+	if !strings.Contains(chart1XML, "<v>Old 1</v>") && !strings.Contains(chart1XML, "<c:v>Old 1</c:v>") {
 		t.Fatalf("chart1 should remain unchanged")
 	}
-	if !strings.Contains(chart2XML, "<c:v>Router A</c:v>") {
+	if !strings.Contains(chart2XML, "<v>Router A</v>") && !strings.Contains(chart2XML, "<c:v>Router A</c:v>") {
 		t.Fatalf("chart2 should contain updated data")
 	}
 

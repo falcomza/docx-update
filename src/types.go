@@ -4,6 +4,10 @@ package docxchartupdater
 type ChartData struct {
 	Categories []string
 	Series     []SeriesData
+	// Optional titles
+	ChartTitle      string // Main chart title
+	CategoryAxisTitle string // X-axis title
+	ValueAxisTitle    string // Y-axis title
 }
 
 // SeriesData defines one chart series.

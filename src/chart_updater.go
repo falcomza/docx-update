@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
@@ -117,67 +116,67 @@ func (u *Updater) findWorkbookPathForChart(chartIndex int) (string, error) {
 	chartPath := filepath.Join(u.tempDir, "word", "charts", fmt.Sprintf("chart%d.xml", chartIndex))
 	rawChart, err := os.ReadFile(chartPath)
 	if err != nil {
-		return "", fmt.Errorf("read chart xml: %w", err)
+		return "", fmt.Errorf("read chart xml for chart%d: %w", chartIndex, err)
 	}
 
 	relID := externalDataRelID(rawChart)
-	if relID != "" {
-		relsPath := filepath.Join(u.tempDir, "word", "charts", "_rels", fmt.Sprintf("chart%d.xml.rels", chartIndex))
-		target, err := findRelationshipTarget(relsPath, relID)
-		if err == nil && target != "" {
-			// Relationship targets are relative to the source part (chart#.xml), not the .rels folder.
-			resolved := filepath.Clean(filepath.Join(filepath.Dir(chartPath), filepath.FromSlash(target)))
-			if _, statErr := os.Stat(resolved); statErr == nil {
-				return resolved, nil
-			}
-		}
+	if relID == "" {
+		return "", fmt.Errorf("chart%d.xml has no externalData relationship ID", chartIndex)
 	}
 
-	fallback := filepath.Join(u.tempDir, "word", "embeddings")
-	entries, err := os.ReadDir(fallback)
+	relsPath := filepath.Join(u.tempDir, "word", "charts", "_rels", fmt.Sprintf("chart%d.xml.rels", chartIndex))
+	target, err := findRelationshipTarget(relsPath, relID)
 	if err != nil {
-		return "", fmt.Errorf("read fallback embeddings dir: %w", err)
+		return "", fmt.Errorf("resolve relationship %s for chart%d: %w", relID, chartIndex, err)
 	}
-	var candidates []string
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		name := strings.ToLower(entry.Name())
-		if strings.HasSuffix(name, ".xlsx") {
-			candidates = append(candidates, filepath.Join(fallback, entry.Name()))
-		}
+	if target == "" {
+		return "", fmt.Errorf("relationship %s for chart%d has empty target", relID, chartIndex)
 	}
-	if len(candidates) == 0 {
-		return "", errors.New("no embedded xlsx file found")
+
+	// Relationship targets are relative to the source part (chart#.xml), not the .rels folder.
+	resolved := filepath.Clean(filepath.Join(filepath.Dir(chartPath), filepath.FromSlash(target)))
+	if _, statErr := os.Stat(resolved); statErr != nil {
+		return "", fmt.Errorf("workbook file %s for chart%d not found: %w", resolved, chartIndex, statErr)
 	}
-	sort.Strings(candidates)
-	return candidates[0], nil
+
+	return resolved, nil
 }
 
 func externalDataRelID(chartXML []byte) string {
 	content := string(chartXML)
-	const marker = "<c:externalData"
-	start := strings.Index(content, marker)
-	if start == -1 {
+	// Try both with and without namespace prefix
+	markers := []string{"<c:externalData", "<externalData"}
+	var tag string
+	for _, marker := range markers {
+		start := strings.Index(content, marker)
+		if start == -1 {
+			continue
+		}
+		end := strings.Index(content[start:], ">")
+		if end == -1 {
+			continue
+		}
+		tag = content[start : start+end]
+		break
+	}
+	if tag == "" {
 		return ""
 	}
-	end := strings.Index(content[start:], ">")
-	if end == -1 {
-		return ""
+	// Try both r:id and relationships:id attribute names
+	relAttrs := []string{`r:id="`, `relationships:id="`}
+	for _, relAttr := range relAttrs {
+		attrIdx := strings.Index(tag, relAttr)
+		if attrIdx == -1 {
+			continue
+		}
+		valueStart := attrIdx + len(relAttr)
+		valueEnd := strings.Index(tag[valueStart:], `"`)
+		if valueEnd == -1 {
+			continue
+		}
+		return tag[valueStart : valueStart+valueEnd]
 	}
-	tag := content[start : start+end]
-	const relAttr = `r:id="`
-	attrIdx := strings.Index(tag, relAttr)
-	if attrIdx == -1 {
-		return ""
-	}
-	valueStart := attrIdx + len(relAttr)
-	valueEnd := strings.Index(tag[valueStart:], `"`)
-	if valueEnd == -1 {
-		return ""
-	}
-	return tag[valueStart : valueStart+valueEnd]
+	return ""
 }
 
 type relationships struct {
