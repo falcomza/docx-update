@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"io"
 	"os"
+	"regexp"
 	"strconv"
 )
 
@@ -136,8 +138,8 @@ func updateChartXML(chartPath string, data ChartData) error {
 		}
 	}
 
-	// Rebuild the chart XML with updated series
-	updated, err := rebuildChartXML(raw, seriesElements)
+	// Rebuild the chart XML with updated series; drop any extra <ser> beyond provided data
+	updated, err := rebuildChartXML(raw, seriesElements, len(data.Series))
 	if err != nil {
 		return err
 	}
@@ -157,7 +159,10 @@ func extractSeriesElements(raw []byte) ([]seriesElement, error) {
 	for {
 		token, err := decoder.Token()
 		if err != nil {
-			break
+			if err == io.EOF {
+				break
+			}
+			return nil, fmt.Errorf("xml token: %w", err)
 		}
 
 		if start, ok := token.(xml.StartElement); ok {
@@ -175,7 +180,8 @@ func extractSeriesElements(raw []byte) ([]seriesElement, error) {
 }
 
 // rebuildChartXML rebuilds chart XML with updated series elements
-func rebuildChartXML(original []byte, updatedSeries []seriesElement) ([]byte, error) {
+// keepCount controls how many <ser> to keep; any further original series are removed
+func rebuildChartXML(original []byte, updatedSeries []seriesElement, keepCount int) ([]byte, error) {
 	var result bytes.Buffer
 	decoder := xml.NewDecoder(bytes.NewReader(original))
 	encoder := xml.NewEncoder(&result)
@@ -189,18 +195,20 @@ func rebuildChartXML(original []byte, updatedSeries []seriesElement) ([]byte, er
 		}
 
 		if start, ok := token.(xml.StartElement); ok {
-			if start.Name.Local == "ser" && seriesIdx < len(updatedSeries) {
-				// Skip the original series element
+			if start.Name.Local == "ser" {
+				// Always skip the original series element from the decoder
 				if err := skipElement(decoder); err != nil {
 					return nil, fmt.Errorf("skip original series: %w", err)
 				}
-				// Encode the updated series
-				if err := encoder.EncodeElement(updatedSeries[seriesIdx], start); err != nil {
-					return nil, fmt.Errorf("encode series %d: %w", seriesIdx, err)
+				// If we still need to keep a series, encode the updated one; else drop it
+				if seriesIdx < keepCount && seriesIdx < len(updatedSeries) {
+					if err := encoder.EncodeElement(updatedSeries[seriesIdx], start); err != nil {
+						return nil, fmt.Errorf("encode series %d: %w", seriesIdx, err)
+					}
 				}
 				seriesIdx++
 				continue
-			}
+		}
 		}
 
 		if err := encoder.EncodeToken(xml.CopyToken(token)); err != nil {
@@ -209,7 +217,50 @@ func rebuildChartXML(original []byte, updatedSeries []seriesElement) ([]byte, er
 	}
 
 	encoder.Flush()
+	
+	// TODO: Fix removeDuplicateXmlns - currently corrupts XML
+	// For now, return as-is (will have duplicate xmlns but that's less harmful)
 	return result.Bytes(), nil
+}
+
+// removeDuplicateXmlns removes duplicate xmlns attributes from XML
+func removeDuplicateXmlns(xmlData []byte) []byte {
+	// Find all xmlns declarations and remove consecutive duplicates
+	xmlnsRe := regexp.MustCompile(`xmlns(:[a-zA-Z0-9]+)?="[^"]*"`)
+	
+	// Process each opening tag
+	tagRe := regexp.MustCompile(`<[a-zA-Z0-9:]+[^>]*>`)
+	
+	result := tagRe.ReplaceAllFunc(xmlData, func(tag []byte) []byte {
+		// Find all xmlns in this tag
+		xmlnsMatches := xmlnsRe.FindAll(tag, -1)
+		
+		if len(xmlnsMatches) <= 1 {
+			return tag // No duplicates possible
+		}
+		
+		// Track unique xmlns
+		seen := make(map[string]bool)
+		
+		// Remove duplicates by replacing tag content
+		for _, xmlns := range xmlnsMatches {
+			xmlnsStr := string(xmlns)
+			if seen[xmlnsStr] {
+				// This is a duplicate, remove it
+				tag = bytes.Replace(tag, xmlns, []byte(""), 1)
+			} else {
+				seen[xmlnsStr] = true
+			}
+		}
+		
+		// Clean up extra whitespace
+		tag = regexp.MustCompile(`\s+`).ReplaceAll(tag, []byte(" "))
+		tag = bytes.Replace(tag, []byte(" >"), []byte(">"), -1)
+		
+		return tag
+	})
+	
+	return result
 }
 
 // skipElement skips the current element in the decoder

@@ -20,13 +20,13 @@ func extractZip(zipPath, destDir string) error {
 		target := filepath.Join(destDir, filepath.FromSlash(f.Name))
 
 		if f.FileInfo().IsDir() {
-			if err := os.MkdirAll(target, 0o755); err != nil {
+			if err := os.MkdirAll(target, 0755); err != nil {
 				return fmt.Errorf("create dir %s: %w", target, err)
 			}
 			continue
 		}
 
-		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
 			return fmt.Errorf("create parent dir for %s: %w", target, err)
 		}
 
@@ -41,17 +41,19 @@ func extractZip(zipPath, destDir string) error {
 			return fmt.Errorf("create file %s: %w", target, err)
 		}
 
-		_, copyErr := io.Copy(out, rc)
-		closeErr := out.Close()
-		rcCloseErr := rc.Close()
-		if copyErr != nil {
-			return fmt.Errorf("copy zip entry %s: %w", f.Name, copyErr)
+		if _, err := io.Copy(out, rc); err != nil {
+			out.Close()
+			rc.Close()
+			return fmt.Errorf("copy zip entry %s: %w", f.Name, err)
 		}
-		if closeErr != nil {
-			return fmt.Errorf("close file %s: %w", target, closeErr)
+
+		if err := out.Close(); err != nil {
+			rc.Close()
+			return fmt.Errorf("close file %s: %w", target, err)
 		}
-		if rcCloseErr != nil {
-			return fmt.Errorf("close zip entry %s: %w", f.Name, rcCloseErr)
+
+		if err := rc.Close(); err != nil {
+			return fmt.Errorf("close zip entry %s: %w", f.Name, err)
 		}
 	}
 
@@ -90,14 +92,13 @@ func createZipFromDir(sourceDir, outZipPath string) error {
 			return fmt.Errorf("open source file %s: %w", path, err)
 		}
 
-		_, copyErr := io.Copy(w, f)
-		closeErr := f.Close()
-
-		if copyErr != nil {
-			return fmt.Errorf("write zip entry %s: %w", zipPath, copyErr)
+		if _, err := io.Copy(w, f); err != nil {
+			f.Close()
+			return fmt.Errorf("write zip entry %s: %w", zipPath, err)
 		}
-		if closeErr != nil {
-			return fmt.Errorf("close source file %s: %w", path, closeErr)
+
+		if err := f.Close(); err != nil {
+			return fmt.Errorf("close source file %s: %w", path, err)
 		}
 
 		return nil

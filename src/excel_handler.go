@@ -33,11 +33,17 @@ func updateEmbeddedWorkbook(xlsxPath string, data ChartData) error {
 		if err != nil {
 			return fmt.Errorf("open workbook entry %s: %w", f.Name, err)
 		}
+
 		content, err := io.ReadAll(rc)
-		rc.Close()
 		if err != nil {
+			rc.Close()
 			return fmt.Errorf("read workbook entry %s: %w", f.Name, err)
 		}
+
+		if err := rc.Close(); err != nil {
+			return fmt.Errorf("close workbook entry %s: %w", f.Name, err)
+		}
+
 		entries[f.Name] = content
 		names = append(names, f.Name)
 	}
