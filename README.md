@@ -13,6 +13,7 @@ A powerful Go library for programmatically manipulating Microsoft Word (DOCX) do
 - **Chart Copying**: Duplicate existing charts programmatically for bulk report generation
 - **Table Creation**: Insert formatted tables with custom styles, borders, and row heights
 - **Paragraph Insertion**: Add styled text with headings, bold, italic, and underline formatting
+- **Image Insertion**: Add images with automatic proportional sizing and flexible positioning
 - **Auto-Captions**: Generate auto-numbered captions using Word's SEQ fields for tables and charts
 
 🛠️ **Advanced Features**
@@ -185,6 +186,65 @@ u.InsertParagraph(updater.ParagraphOptions{
 u.Save("with_paragraphs.docx")
 ```
 
+### Inserting Images
+
+Add images with automatic proportional sizing:
+
+```go
+u, _ := updater.New("document.docx")
+defer u.Cleanup()
+
+// Insert image with width only - height calculated proportionally
+u.InsertImage(updater.ImageOptions{
+    Path:     "images/logo.png",
+    Width:    400,  // pixels
+    AltText:  "Company Logo",
+    Position: updater.PositionEnd,
+})
+
+// Insert image with height only - width calculated proportionally
+u.InsertImage(updater.ImageOptions{
+    Path:     "images/chart.jpg",
+    Height:   300,  // pixels
+    AltText:  "Chart Illustration",
+    Position: updater.PositionEnd,
+})
+
+// Insert image with both dimensions (may distort if not proportional)
+u.InsertImage(updater.ImageOptions{
+    Path:     "images/photo.png",
+    Width:    500,
+    Height:   400,
+    Position: updater.PositionEnd,
+})
+
+// Insert image with actual file dimensions
+u.InsertImage(updater.ImageOptions{
+    Path:     "images/screenshot.png",
+    AltText:  "Application Screenshot",
+    Position: updater.PositionEnd,
+})
+
+// Insert image after specific text
+u.InsertImage(updater.ImageOptions{
+    Path:     "images/diagram.png",
+    Width:    600,
+    Position: updater.PositionAfterText,
+    Anchor:   "See diagram below",
+})
+
+u.Save("with_images.docx")
+```
+
+**Proportional Sizing:**
+- Specify only `Width`: Height calculated automatically
+- Specify only `Height`: Width calculated automatically
+- Specify both: Used as-is (may distort)
+- Specify neither: Uses actual image dimensions
+
+**Supported Formats:**
+- PNG, JPEG, GIF, BMP, TIFF
+
 ### Auto-Numbering Captions
 
 Add captions with automatic sequential numbering:
@@ -255,6 +315,12 @@ u.Save("multi_chart_report.docx")
 - `InsertParagraph(options ParagraphOptions)` - Insert formatted paragraph
 - Supports: bold, italic, underline, custom styles
 
+### Image Operations
+- `InsertImage(options ImageOptions)` - Insert image with optional proportional sizing
+- Automatic dimension calculation to maintain aspect ratio
+- Supports: PNG, JPEG, GIF, BMP, TIFF formats
+- Flexible positioning: beginning, end, before/after text
+
 ### Caption Operations
 - `AddCaption(options CaptionOptions)` - Add auto-numbered caption
 - Uses Word's SEQ fields for automatic numbering
@@ -291,6 +357,7 @@ Check the `/examples` directory for complete working examples:
 - `example_chart_insert.go` - Creating charts from scratch
 - `example_table.go` - Table creation with styling
 - `example_paragraph.go` - Text and heading insertion
+- `example_image.go` - Image insertion with proportional sizing
 - `example_captions.go` - Auto-numbered captions
 - `example_multi_subsystem.go` - Combined operations
 - `example_with_template.go` - Template-based generation
@@ -336,13 +403,12 @@ DOCX files are ZIP archives containing XML files. This library:
 
 - Currently supports bar, line, and scatter chart types
 - Table styles are limited to predefined Word styles
-- Images in charts are not yet supported
 - Performance depends on document size and complexity
 
 ## Roadmap
 
 - [ ] Add more chart types (pie, area, combo charts)
-- [ ] Image insertion support
+- [x] Image insertion support with proportional sizing
 - [ ] Header/footer manipulation
 - [ ] Style customization API
 - [ ] Performance optimizations for large documents

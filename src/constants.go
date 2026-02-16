@@ -14,10 +14,32 @@ const (
 	ChartIDIncrement = 0x1000
 )
 
+// OpenXML constants for image drawings
+const (
+	// ImageAnchorIDBase is the base value for anchor IDs in image drawings
+	ImageAnchorIDBase = 0x50000000
+
+	// ImageEditIDBase is the base value for edit IDs in image drawings
+	ImageEditIDBase = 0x0E000000
+
+	// ImageIDIncrement is the increment per image to ensure ID uniqueness
+	ImageIDIncrement = 0x1000
+
+	// EMUsPerInch is the number of English Metric Units (EMUs) per inch
+	// 1 inch = 914400 EMUs (used for image sizing in OpenXML)
+	EMUsPerInch = 914400
+
+	// DefaultImageDPI is the default DPI for image dimensions
+	DefaultImageDPI = 96
+)
+
 // Package-level compiled regular expressions for performance
 var (
 	// chartFilePattern matches chart XML filenames (e.g., chart1.xml, chart2.xml)
 	chartFilePattern = regexp.MustCompile(`^chart(\d+)\.xml$`)
+
+	// imageFilePattern matches image filenames in media folder (e.g., image1.png, image2.jpg)
+	imageFilePattern = regexp.MustCompile(`^image(\d+)\.\w+$`)
 
 	// docPrIDPattern matches docPr id attributes in document.xml
 	docPrIDPattern = regexp.MustCompile(`docPr id="(\d+)"`)
@@ -45,4 +67,9 @@ const (
 // OpenXML content types
 const (
 	ChartContentType = "application/vnd.openxmlformats-officedocument.drawingml.chart+xml"
+	ImageJPEGType    = "image/jpeg"
+	ImagePNGType     = "image/png"
+	ImageGIFType     = "image/gif"
+	ImageBMPType     = "image/bmp"
+	ImageTIFFType    = "image/tiff"
 )
