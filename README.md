@@ -20,6 +20,7 @@ A powerful Go library for programmatically manipulating Microsoft Word (DOCX) do
 - **Read Operations**: Extract text from paragraphs, tables, headers, and footers
 - **Hyperlinks**: Insert external URLs and internal document links
 - **Headers & Footers**: Professional document headers and footers with automatic page numbering
+- **Document Properties**: Set core properties (Title, Author, Keywords), app properties (Company, Manager), and custom properties
 
 🛠️ **Advanced Features**
 - XML-based chart parsing using Go's `encoding/xml`
@@ -576,6 +577,62 @@ footerContent.DateFormat = "MMMM d, yyyy"  // "January 1, 2026"
 u.Save("with_headers_footers.docx")
 ```
 
+### Setting Document Properties
+
+Set core, application, and custom document properties:
+
+```go
+u, _ := updater.New("template.docx")
+defer u.Cleanup()
+
+// Set core properties (visible in File > Info)
+coreProps := updater.CoreProperties{
+    Title:          "Q4 2026 Financial Report",
+    Subject:        "Quarterly Financial Analysis",
+    Creator:        "Finance Department",
+    Keywords:       "finance, Q4, 2026, revenue, analysis",
+    Description:    "Comprehensive financial report for Q4 2026",
+    Category:       "Financial Reports",
+    LastModifiedBy: "John Doe",
+    Revision:       "2",
+    Created:        time.Date(2026, 1, 1, 9, 0, 0, 0, time.UTC),
+    Modified:       time.Now(),
+}
+err := u.SetCoreProperties(coreProps)
+
+// Set application properties
+appProps := updater.AppProperties{
+    Company:     "TechVenture Inc",
+    Manager:     "Sarah Williams",
+    Application: "Microsoft Word",
+    AppVersion:  "16.0000",
+}
+err = u.SetAppProperties(appProps)
+
+// Set custom properties (for workflow automation, metadata tracking, etc.)
+customProps := []updater.CustomProperty{
+    {Name: "Department", Value: "Finance", Type: "lpwstr"},
+    {Name: "FiscalYear", Value: 2026, Type: "i4"},
+    {Name: "Quarter", Value: "Q4"},
+    {Name: "Revenue", Value: 15750000.50, Type: "r8"},
+    {Name: "IsApproved", Value: true, Type: "bool"},
+    {Name: "ProjectCode", Value: "FIN-Q4-2026"},
+    {Name: "ConfidentialityLevel", Value: "High"},
+}
+err = u.SetCustomProperties(customProps)
+
+// Read core properties
+props, err := u.GetCoreProperties()
+fmt.Printf("Title: %s, Author: %s\n", props.Title, props.Creator)
+
+u.Save("with_properties.docx")
+```
+
+**Property Types:**
+- Core Properties: Title, Subject, Creator, Keywords, Description, Category, LastModifiedBy, Revision, Created, Modified
+- App Properties: Company, Manager, Application, AppVersion
+- Custom Properties: Any key-value pairs with types: string (`lpwstr`), integer (`i4`), float (`r8`), boolean (`bool`), date (`date`)
+
 ## API Overview
 
 ### Chart Operations
@@ -608,6 +665,12 @@ u.Save("with_headers_footers.docx")
 ### Header & Footer Operations
 - `SetHeader(content HeaderFooterContent, options HeaderOptions)` - Create/update header
 - `SetFooter(content HeaderFooterContent, options FooterOptions)` - Create/update footer
+
+### Properties Operations
+- `SetCoreProperties(props CoreProperties)` - Set core document properties (Title, Author, etc.)
+- `GetCoreProperties()` - Retrieve core document properties
+- `SetAppProperties(props AppProperties)` - Set application properties (Company, Manager, etc.)
+- `SetCustomProperties(properties []CustomProperty)` - Set custom properties with various types
 
 ### Break Operations
 - `InsertPageBreak(options BreakOptions)` - Insert page break

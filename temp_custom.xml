@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="2" name="Department"><vt:lpwstr>Corporate Communications</vt:lpwstr></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="3" name="DocumentType"><vt:lpwstr>Annual Report</vt:lpwstr></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="4" name="Status"><vt:lpwstr>Final</vt:lpwstr></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="5" name="Classification"><vt:lpwstr>Public</vt:lpwstr></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="6" name="FiscalYear"><vt:i4>2026</vt:i4></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="7" name="Revenue"><vt:r8>1.2500000075e+08</vt:r8></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="8" name="EmployeeCount"><vt:i4>5420</vt:i4></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="9" name="GrowthRate"><vt:r8>12.5</vt:r8></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="10" name="IsAudited"><vt:bool>true</vt:bool></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="11" name="IsBoardApproved"><vt:bool>true</vt:bool></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="12" name="RequiresSignature"><vt:bool>false</vt:bool></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="13" name="FiscalYearEnd"><vt:filetime>2026-12-31T00:00:00Z</vt:filetime></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="14" name="PublicationDate"><vt:filetime>2027-01-15T00:00:00Z</vt:filetime></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="15" name="ProjectCode"><vt:lpwstr>RPT-2026-ANNUAL</vt:lpwstr></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="16" name="VersionNumber"><vt:i4>3</vt:i4></property>
+<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="17" name="ReviewCycle"><vt:lpwstr>Q4-2026</vt:lpwstr></property>
+</Properties>

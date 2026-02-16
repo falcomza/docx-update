@@ -375,3 +375,84 @@ func TestTemplateCompleteWorkflow(t *testing.T) {
 	t.Logf("  File size: %d bytes", info.Size())
 	t.Log("  All operations completed successfully!")
 }
+
+// TestTemplateWithProperties tests document properties functionality
+func TestTemplateWithProperties(t *testing.T) {
+	templatePath := "../templates/docx_template.docx"
+	outputPath := "../outputs/template_with_properties_test.docx"
+
+	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
+		t.Skipf("Template file not found: %s", templatePath)
+	}
+
+	// Ensure output directory exists
+	if err := os.MkdirAll(filepath.Dir(outputPath), 0755); err != nil {
+		t.Fatalf("Failed to create output directory: %v", err)
+	}
+
+	t.Log("Opening template and setting properties...")
+	u, err := docxupdater.New(templatePath)
+	if err != nil {
+		t.Fatalf("Failed to open template: %v", err)
+	}
+	defer u.Cleanup()
+
+	// Set core properties
+	t.Log("Setting core properties...")
+	coreProps := docxupdater.CoreProperties{
+		Title:          "Financial Analysis Report",
+		Subject:        "Q4 2026 Analysis",
+		Creator:        "Finance Team",
+		Keywords:       "finance, analysis, Q4, 2026, revenue",
+		Description:    "Detailed financial analysis for the fourth quarter of 2026",
+		Category:       "Financial Reports",
+		LastModifiedBy: "John Doe",
+		Revision:       "2",
+	}
+	if err := u.SetCoreProperties(coreProps); err != nil {
+		t.Fatalf("Failed to set core properties: %v", err)
+	}
+
+	// Set app properties
+	t.Log("Setting app properties...")
+	appProps := docxupdater.AppProperties{
+		Company:     "TechVenture Inc",
+		Manager:     "Sarah Williams",
+		Application: "Microsoft Word",
+		AppVersion:  "16.0000",
+	}
+	if err := u.SetAppProperties(appProps); err != nil {
+		t.Fatalf("Failed to set app properties: %v", err)
+	}
+
+	// Set custom properties
+	t.Log("Setting custom properties...")
+	customProps := []docxupdater.CustomProperty{
+		{Name: "Department", Value: "Finance", Type: "lpwstr"},
+		{Name: "FiscalYear", Value: 2026, Type: "i4"},
+		{Name: "Quarter", Value: "Q4"},
+		{Name: "Revenue", Value: 15750000.50, Type: "r8"},
+		{Name: "IsApproved", Value: true, Type: "bool"},
+		{Name: "ProjectCode", Value: "FIN-Q4-2026"},
+		{Name: "ConfidentialityLevel", Value: "High"},
+	}
+	if err := u.SetCustomProperties(customProps); err != nil {
+		t.Fatalf("Failed to set custom properties: %v", err)
+	}
+
+	// Save document
+	t.Log("Saving document...")
+	if err := u.Save(outputPath); err != nil {
+		t.Fatalf("Failed to save document: %v", err)
+	}
+
+	// Verify output
+	info, err := os.Stat(outputPath)
+	if err != nil {
+		t.Fatalf("Failed to stat output file: %v", err)
+	}
+
+	t.Logf("✓ Document created with properties: %s", outputPath)
+	t.Logf("  File size: %d bytes", info.Size())
+	t.Log("  Core, App, and Custom properties all set!")
+}
