@@ -30,4 +30,4 @@ test_copy_no_update
 test_simple_copy
 !README.md
 !templates/docx_template.docx
-!docs/
+!docs/*.md
