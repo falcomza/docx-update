@@ -175,7 +175,7 @@ func getImageContentType(path string) string {
 // getNextImageIndex finds the next available image index by scanning the media folder
 func (u *Updater) getNextImageIndex() (int, error) {
 	mediaPath := filepath.Join(u.tempDir, "word", "media")
-	
+
 	// Create media folder if it doesn't exist
 	if err := os.MkdirAll(mediaPath, 0o755); err != nil {
 		return 0, fmt.Errorf("create media folder: %w", err)
@@ -227,8 +227,8 @@ func (u *Updater) generateImageDrawingXML(imageIndex int, relId string, dims Ima
 
 	template := `<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="%08X" wp14:editId="%08X"><wp:extent cx="%d" cy="%d"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="%d" name="Picture %d" descr="%s"/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="%d" name="Picture %d" descr="%s"/><pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr></pic:nvPicPr><pic:blipFill><a:blip r:embed="%s" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/><a:srcRect/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr bwMode="auto"><a:xfrm><a:off x="0" y="0"/><a:ext cx="%d" cy="%d"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/><a:ln><a:noFill/></a:ln></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`
 
-	return []byte(fmt.Sprintf(template, 
-		anchorId, editId, widthEMU, heightEMU, 
+	return []byte(fmt.Sprintf(template,
+		anchorId, editId, widthEMU, heightEMU,
 		docPrId, imageIndex, xmlEscape(altText),
 		docPrId, imageIndex, xmlEscape(altText),
 		relId,
@@ -250,15 +250,15 @@ func (u *Updater) addImageRelationship(imageFileName string) (string, error) {
 	}
 
 	// Add relationship for the image
-	insert := fmt.Sprintf("\n  <Relationship Id=\"%s\" Type=\"%s/image\" Target=\"media/%s\"/>\n", 
+	insert := fmt.Sprintf("\n  <Relationship Id=\"%s\" Type=\"%s/image\" Target=\"media/%s\"/>\n",
 		nextRelId, OfficeDocumentNS, imageFileName)
-	
+
 	closer := []byte("</Relationships>")
 	pos := bytes.LastIndex(raw, closer)
 	if pos == -1 {
 		return "", fmt.Errorf("invalid document.xml.rels: missing </Relationships>")
 	}
-	
+
 	result := make([]byte, len(raw)+len(insert))
 	n := copy(result, raw[:pos])
 	n += copy(result[n:], []byte(insert))
@@ -267,7 +267,7 @@ func (u *Updater) addImageRelationship(imageFileName string) (string, error) {
 	if err := os.WriteFile(relsPath, result, 0o644); err != nil {
 		return "", fmt.Errorf("write relationships: %w", err)
 	}
-	
+
 	return nextRelId, nil
 }
 
@@ -290,26 +290,26 @@ func (u *Updater) addImageContentType(ext, contentType string) error {
 
 	// Add Default element for the image type
 	insert := fmt.Sprintf("\n  <Default Extension=\"%s\" ContentType=\"%s\"/>\n", ext, contentType)
-	
+
 	// Insert before </Types>
 	closer := []byte("</Types>")
 	pos := bytes.LastIndex(raw, closer)
 	if pos == -1 {
 		return fmt.Errorf("invalid [Content_Types].xml: missing </Types>")
 	}
-	
+
 	result := make([]byte, len(raw)+len(insert))
 	n := copy(result, raw[:pos])
 	n += copy(result[n:], []byte(insert))
 	copy(result[n:], raw[pos:])
-	
+
 	return os.WriteFile(contentTypesPath, result, 0o644)
 }
 
 // copyImageToMedia copies the image file to the word/media folder
 func (u *Updater) copyImageToMedia(srcPath, destFileName string) error {
 	mediaPath := filepath.Join(u.tempDir, "word", "media")
-	
+
 	// Ensure media directory exists
 	if err := os.MkdirAll(mediaPath, 0o755); err != nil {
 		return fmt.Errorf("create media directory: %w", err)
