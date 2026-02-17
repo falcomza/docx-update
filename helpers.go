@@ -42,3 +42,23 @@ func columnLetters(n int) string {
 func cellRef(col, row int) string {
 	return columnLetters(col) + strconv.Itoa(row)
 }
+
+// normalizeHexColor normalizes a hex color code for use in Office Open XML.
+// Accepts colors with or without '#' prefix. Returns empty string if invalid.
+// Examples: "#FF0000" -> "FF0000", "ff0000" -> "FF0000"
+func normalizeHexColor(color string) string {
+	c := strings.TrimSpace(color)
+	if c == "" {
+		return ""
+	}
+	c = strings.TrimPrefix(c, "#")
+	if len(c) != 6 {
+		return ""
+	}
+	for _, ch := range c {
+		if !(ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'f' || ch >= 'A' && ch <= 'F') {
+			return ""
+		}
+	}
+	return strings.ToUpper(c)
+}

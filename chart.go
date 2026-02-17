@@ -35,10 +35,10 @@ type ChartOptions struct {
 	ValueAxisTitle    string // Y-axis title (vertical axis)
 
 	// Data
-	Categories   []string     // Category labels (X-axis)
-	Series       []SeriesData // Data series with names and values
-	ShowLegend   bool         // Show legend (default: true)
-	LegendPosition string     // Legend position: "r" (right), "l" (left), "t" (top), "b" (bottom)
+	Categories     []string     // Category labels (X-axis)
+	Series         []SeriesData // Data series with names and values
+	ShowLegend     bool         // Show legend (default: true)
+	LegendPosition string       // Legend position: "r" (right), "l" (left), "t" (top), "b" (bottom)
 
 	// Chart dimensions (default: spans between margins)
 	Width  int // Width in EMUs (English Metric Units), 0 for default (6099523 = ~6.5")
@@ -162,7 +162,7 @@ func generateChartXML(opts ChartOptions) []byte {
 
 	buf.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`)
 	buf.WriteString(`<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">`)
-	
+
 	buf.WriteString(`<c:chart>`)
 
 	// Chart title
@@ -259,7 +259,7 @@ func generateChartXML(opts ChartOptions) []byte {
 	buf.WriteString(`<c:plotVisOnly val="1"/>`)
 	buf.WriteString(`<c:dispBlanksAs val="gap"/>`)
 	buf.WriteString(`<c:showDLblsOverMax val="0"/>`)
-	
+
 	buf.WriteString(`</c:chart>`)
 
 	// External data reference
@@ -332,6 +332,13 @@ func generateColumnChartXML(opts ChartOptions) string {
 		buf.WriteString(`</c:numCache>
   </c:numRef>
 </c:val>`)
+
+		// Add color if specified
+		if color := normalizeHexColor(series.Color); color != "" {
+			buf.WriteString(`<c:spPr><a:solidFill><a:srgbClr val="`)
+			buf.WriteString(color)
+			buf.WriteString(`"/></a:solidFill></c:spPr>`)
+		}
 
 		buf.WriteString(`</c:ser>`)
 	}

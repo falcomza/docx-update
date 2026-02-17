@@ -14,6 +14,7 @@ type ChartData struct {
 type SeriesData struct {
 	Name   string
 	Values []float64
+	Color  string // Hex color code (e.g., "FF0000" for red) - optional
 }
 
 // ImageOptions defines options for image insertion
