@@ -7,13 +7,13 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 // TestTemplateIntegration tests all new features using the real docx_template.docx
 // This demonstrates a realistic workflow combining multiple operations
 func TestTemplateIntegration(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/template_integration_test.docx"
 
 	// Ensure template exists
@@ -143,7 +143,7 @@ func TestTemplateIntegration(t *testing.T) {
 
 // TestTemplateReplaceMultiple tests replacing multiple different strings
 func TestTemplateReplaceMultiple(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/template_replace_multiple_test.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -185,7 +185,7 @@ func TestTemplateReplaceMultiple(t *testing.T) {
 
 // TestTemplateFindAll tests finding all occurrences of patterns
 func TestTemplateFindAll(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		t.Skipf("Template file not found: %s", templatePath)
@@ -222,7 +222,7 @@ func TestTemplateFindAll(t *testing.T) {
 
 // TestTemplateExtractTables tests extracting table content
 func TestTemplateExtractTables(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		t.Skipf("Template file not found: %s", templatePath)
@@ -253,7 +253,7 @@ func TestTemplateExtractTables(t *testing.T) {
 
 // TestTemplateErrorHandling tests error handling with invalid operations
 func TestTemplateErrorHandling(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		t.Skipf("Template file not found: %s", templatePath)
@@ -285,7 +285,7 @@ func TestTemplateErrorHandling(t *testing.T) {
 
 // TestTemplateCompleteWorkflow demonstrates a complete realistic workflow
 func TestTemplateCompleteWorkflow(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/template_complete_workflow.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -378,7 +378,7 @@ func TestTemplateCompleteWorkflow(t *testing.T) {
 
 // TestTemplateWithProperties tests document properties functionality
 func TestTemplateWithProperties(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/template_with_properties_test.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {

@@ -9,13 +9,13 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 // TestInsertImageWithRealTemplate tests image insertion using the actual docx_template.docx
 func TestInsertImageWithRealTemplate(t *testing.T) {
 	// Setup paths
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputDir := "../outputs"
 	outputPath := filepath.Join(outputDir, "template_with_image_test.docx")
 
@@ -82,7 +82,7 @@ func TestInsertImageWithRealTemplate(t *testing.T) {
 
 // TestInsertMultipleImagesInRealTemplate tests inserting multiple images
 func TestInsertMultipleImagesInRealTemplate(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputDir := "../outputs"
 	outputPath := filepath.Join(outputDir, "template_with_multiple_images_test.docx")
 
@@ -185,7 +185,7 @@ func TestInsertMultipleImagesInRealTemplate(t *testing.T) {
 
 // TestInsertImageWithTextAnchorsInRealTemplate tests position-based insertion
 func TestInsertImageWithTextAnchorsInRealTemplate(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputDir := "../outputs"
 	outputPath := filepath.Join(outputDir, "template_with_anchored_images_test.docx")
 
@@ -278,7 +278,7 @@ func TestInsertImageWithTextAnchorsInRealTemplate(t *testing.T) {
 
 // TestInsertImageVariousSizes tests different sizing options
 func TestInsertImageVariousSizes(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputDir := "../outputs"
 	outputPath := filepath.Join(outputDir, "template_with_various_sizes_test.docx")
 
@@ -422,7 +422,7 @@ func createTestImageForTemplate(t *testing.T, path string, width, height int) {
 
 // TestInsertImageWithCaption tests image insertion with auto-numbered captions
 func TestInsertImageWithCaption(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputDir := "../outputs"
 	outputPath := filepath.Join(outputDir, "template_with_captioned_images_test.docx")
 
@@ -547,7 +547,7 @@ func TestInsertImageWithCaption(t *testing.T) {
 
 // TestInsertImageWithManualCaption tests image with manual caption numbering
 func TestInsertImageWithManualCaption(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputDir := "../outputs"
 	outputPath := filepath.Join(outputDir, "template_with_manual_caption_test.docx")
 
@@ -606,7 +606,7 @@ func TestInsertImageWithManualCaption(t *testing.T) {
 
 // TestInsertBreaksWithRealTemplate tests page and section breaks with the real template
 func TestInsertBreaksWithRealTemplate(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputDir := "../outputs"
 	outputPath := filepath.Join(outputDir, "template_with_breaks_test.docx")
 

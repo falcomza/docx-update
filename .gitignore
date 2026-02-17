@@ -1,5 +1,6 @@
 templates/
 outputs/
+examples/
 *.log
 *.tmp
 *.bak
@@ -31,3 +32,4 @@ test_simple_copy
 !README.md
 !templates/docx_template.docx
 !docs/*.md
+*.xml

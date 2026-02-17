@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 // Test custom error types
@@ -338,7 +338,7 @@ func fileExists(path string) bool {
 // Helper to create a minimal DOCX with test text
 func createMinimalDoc(path, text string) error {
 	// Use the existing test helper from other tests
-	u, err := docxupdater.New("../templates/docx_template.docx")
+	u, err := docxupdater.New("templates/docx_template.docx")
 	if err != nil {
 		return err
 	}

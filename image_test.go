@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 // createTestImage creates a simple test image with the given dimensions

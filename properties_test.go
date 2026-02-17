@@ -7,12 +7,12 @@ import (
 	"testing"
 	"time"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 // TestSetCoreProperties tests setting core document properties
 func TestSetCoreProperties(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/test_core_properties.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -64,7 +64,7 @@ func TestSetCoreProperties(t *testing.T) {
 
 // TestGetCoreProperties tests retrieving core properties
 func TestGetCoreProperties(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		t.Skipf("Template file not found: %s", templatePath)
@@ -114,7 +114,7 @@ func TestGetCoreProperties(t *testing.T) {
 
 // TestSetAppProperties tests setting application properties
 func TestSetAppProperties(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/test_app_properties.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -160,7 +160,7 @@ func TestSetAppProperties(t *testing.T) {
 
 // TestSetCustomProperties tests setting custom properties
 func TestSetCustomProperties(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/test_custom_properties.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -215,7 +215,7 @@ func TestSetCustomProperties(t *testing.T) {
 
 // TestCustomPropertiesInferTypes tests type inference for custom properties
 func TestCustomPropertiesInferTypes(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/test_custom_inferred_types.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -252,7 +252,7 @@ func TestCustomPropertiesInferTypes(t *testing.T) {
 
 // TestUpdateExistingProperties tests updating existing properties
 func TestUpdateExistingProperties(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		t.Skipf("Template file not found: %s", templatePath)
@@ -306,7 +306,7 @@ func TestUpdateExistingProperties(t *testing.T) {
 
 // TestEmptyProperties tests handling of empty property values
 func TestEmptyProperties(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		t.Skipf("Template file not found: %s", templatePath)
@@ -337,7 +337,7 @@ func TestEmptyProperties(t *testing.T) {
 
 // TestPropertiesXMLEscaping tests that special characters are properly escaped
 func TestPropertiesXMLEscaping(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/test_properties_escaping.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -379,7 +379,7 @@ func TestPropertiesXMLEscaping(t *testing.T) {
 
 // TestCompletePropertiesWorkflow tests setting all property types together
 func TestCompletePropertiesWorkflow(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/test_complete_properties.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -462,7 +462,7 @@ func TestCompletePropertiesWorkflow(t *testing.T) {
 
 // TestPropertiesWithExistingContent tests that properties work alongside other modifications
 func TestPropertiesWithExistingContent(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 	outputPath := "../outputs/test_properties_with_content.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
@@ -504,7 +504,7 @@ func TestPropertiesWithExistingContent(t *testing.T) {
 
 // TestPropertiesVerifyFiles verifies that property files are created correctly
 func TestPropertiesVerifyFiles(t *testing.T) {
-	templatePath := "../templates/docx_template.docx"
+	templatePath := "templates/docx_template.docx"
 
 	if _, err := os.Stat(templatePath); os.IsNotExist(err) {
 		t.Skipf("Template file not found: %s", templatePath)

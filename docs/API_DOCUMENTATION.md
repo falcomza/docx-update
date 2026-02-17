@@ -4,7 +4,7 @@
 
 **Version**: 1.0.0
 **Go Version**: 1.25.7+
-**Import Path**: `github.com/falcomza/docx-update/src`
+**Import Path**: `github.com/falcomza/docx-update`
 
 ---
 
@@ -68,7 +68,7 @@ go get github.com/falcomza/docx-update@latest
 ### Import
 
 ```go
-import docxupdater "github.com/falcomza/docx-update/src"
+import docxupdater "github.com/falcomza/docx-update"
 ```
 
 ---
@@ -82,7 +82,7 @@ package main
 
 import (
     "log"
-    docxupdater "github.com/falcomza/docx-update/src"
+    docxupdater "github.com/falcomza/docx-update"
 )
 
 func main() {
@@ -617,7 +617,7 @@ package main
 
 import (
     "github.com/gofiber/fiber/v2"
-    docxupdater "github.com/falcomza/docx-update/src"
+    docxupdater "github.com/falcomza/docx-update"
 )
 
 type UpdateChartRequest struct {
@@ -1117,7 +1117,7 @@ package main
 import (
     "fmt"
     "log"
-    docxupdater "github.com/falcomza/docx-update/src"
+    docxupdater "github.com/falcomza/docx-update"
 )
 
 func GenerateReport(templatePath, outputPath string, data ReportData) error {

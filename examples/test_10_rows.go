@@ -1,3 +1,5 @@
+//go:build ignore
+
 package main
 
 import (
@@ -6,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 func main() {

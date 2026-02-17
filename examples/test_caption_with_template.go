@@ -1,10 +1,12 @@
+//go:build ignore
+
 package main
 
 import (
 	"log"
 	"path/filepath"
 
-	updater "github.com/falcomza/docx-update/src"
+	updater "github.com/falcomza/docx-update"
 )
 
 func main() {

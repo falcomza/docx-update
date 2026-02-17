@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 // Verifies that when updating a copied chart with fewer series than the template,
 // extra <c:ser> elements are removed from chartN.xml
 func TestUpdateDropsExtraSeries(t *testing.T) {
-	tpl := "../templates/docx_output_10_rows.docx"
+	tpl := "templates/docx_output_10_rows.docx"
 	if _, err := os.Stat(tpl); err != nil {
 		t.Skip("template not present: " + tpl)
 	}

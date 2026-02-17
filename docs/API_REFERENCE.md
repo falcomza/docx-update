@@ -1,6 +1,6 @@
 # DOCX Update Library - API Reference
 
-**Module**: `github.com/falcomza/docx-update/src`
+**Module**: `github.com/falcomza/docx-update`
 **Go Version**: 1.25.7+
 **Fiber Version**: v3.0.0+
 
@@ -21,7 +21,7 @@
 ## Package Overview
 
 ```go
-import docxupdater "github.com/falcomza/docx-update/src"
+import docxupdater "github.com/falcomza/docx-update"
 ```
 
 The `docxupdater` package provides functionality for programmatically manipulating Microsoft Word (DOCX) documents. It operates directly on the OpenXML format, enabling chart updates, table insertion, image embedding, and text operations.
@@ -44,7 +44,7 @@ go get github.com/falcomza/docx-update@latest
 
 ```go
 import (
-    docxupdater "github.com/falcomza/docx-update/src"
+    docxupdater "github.com/falcomza/docx-update"
     "github.com/gofiber/fiber/v3"
 )
 ```
@@ -899,7 +899,7 @@ package main
 
 import (
     "github.com/gofiber/fiber/v3"
-    docxupdater "github.com/falcomza/docx-update/src"
+    docxupdater "github.com/falcomza/docx-update"
 )
 
 func main() {

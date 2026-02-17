@@ -6,12 +6,12 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update/src"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 func TestCopyChart(t *testing.T) {
 	// Create a test DOCX with a chart
-	testDocx := "../templates/docx_template.docx"
+	testDocx := "templates/docx_template.docx"
 	if _, err := os.Stat(testDocx); err != nil {
 		t.Skipf("Test DOCX not found: %s", testDocx)
 	}
@@ -105,7 +105,7 @@ func TestCopyChart(t *testing.T) {
 }
 
 func TestCopyChartMultipleTimes(t *testing.T) {
-	testDocx := "../templates/docx_template.docx"
+	testDocx := "templates/docx_template.docx"
 	if _, err := os.Stat(testDocx); err != nil {
 		t.Skipf("Test DOCX not found: %s", testDocx)
 	}
@@ -175,7 +175,7 @@ func TestCopyChartMultipleTimes(t *testing.T) {
 }
 
 func TestCopyChartInvalidSource(t *testing.T) {
-	testDocx := "../templates/docx_template.docx"
+	testDocx := "templates/docx_template.docx"
 	if _, err := os.Stat(testDocx); err != nil {
 		t.Skipf("Test DOCX not found: %s", testDocx)
 	}
@@ -194,7 +194,7 @@ func TestCopyChartInvalidSource(t *testing.T) {
 }
 
 func TestCopyChartIgnoresMarker(t *testing.T) {
-	testDocx := "../templates/docx_template.docx"
+	testDocx := "templates/docx_template.docx"
 	if _, err := os.Stat(testDocx); err != nil {
 		t.Skipf("Test DOCX not found: %s", testDocx)
 	}
