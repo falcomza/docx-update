@@ -385,6 +385,121 @@ const (
 )
 ```
 
+### CoreProperties
+
+Core document metadata properties.
+
+```go
+type CoreProperties struct {
+    Title          string    // Document title
+    Subject        string    // Document subject
+    Creator        string    // Author/Creator name
+    Keywords       string    // Keywords (comma-separated)
+    Description    string    // Description/Comments
+    Category       string    // Document category
+    Created        time.Time // Creation date
+    Modified       time.Time // Modification date
+    LastModifiedBy string    // Last modifier name
+    Revision       string    // Revision number/version
+}
+```
+
+### AppProperties
+
+Application-specific document properties.
+
+```go
+type AppProperties struct {
+    Company     string // Company name
+    Manager     string // Manager name
+    Application string // Application name (typically Microsoft Word)
+    AppVersion  string // Application version (e.g., "16.0000")
+}
+```
+
+### CustomProperty
+
+Custom document property with typed value.
+
+```go
+type CustomProperty struct {
+    Name  string      // Property name
+    Value interface{} // Property value (string, int, float64, bool, or time.Time)
+    Type  string      // Type identifier (optional, auto-inferred)
+}
+```
+
+**Supported types:**
+- `"lpwstr"` - String value
+- `"i4"` - Integer value
+- `"r8"` - Float64 value
+- `"bool"` - Boolean value
+- `"filetime"` - Time value
+
+### BookmarkOptions
+
+Options for bookmark creation.
+
+```go
+type BookmarkOptions struct {
+    Position InsertPosition // Where to create bookmark
+    Anchor   string         // Anchor text for relative positioning
+    Style    ParagraphStyle // Style for bookmarked text
+    Hidden   bool           // Invisible marker (default: true)
+}
+```
+
+### ChartOptions
+
+Comprehensive options for chart creation.
+
+```go
+type ChartOptions struct {
+    // Positioning
+    Position InsertPosition
+    Anchor   string // Text anchor for relative positioning
+
+    // Chart type
+    ChartKind ChartKind // Column, Bar, Line, Pie, Area
+
+    // Titles
+    Title             string // Main chart title
+    CategoryAxisTitle string // X-axis title (horizontal axis)
+    ValueAxisTitle    string // Y-axis title (vertical axis)
+
+    // Data
+    Categories []string     // Category labels (X-axis)
+    Series     []SeriesData // Data series with names and values
+
+    // Legend
+    ShowLegend     bool   // Show legend (default: true)
+    LegendPosition string // Legend position: "r" (right), "l" (left), "t" (top), "b" (bottom)
+
+    // Dimensions (default: spans between margins)
+    Width  int // Width in EMUs (English Metric Units), 0 for default (6099523 = ~6.5")
+    Height int // Height in EMUs, 0 for default (3340467 = ~3.5")
+
+    // Caption
+    Caption *CaptionOptions
+}
+```
+
+### ChartKind
+
+Chart type enumeration.
+
+```go
+type ChartKind string
+
+const (
+    ChartKindColumn ChartKind = "barChart"  // Column chart (vertical bars)
+    ChartKindBar    ChartKind = "barChart"  // Bar chart (horizontal bars)
+    ChartKindLine   ChartKind = "lineChart" // Line chart
+    ChartKindPie    ChartKind = "pieChart"  // Pie chart
+    ChartKindArea   ChartKind = "areaChart" // Area chart
+)
+```
+
 ### CaptionOptions
 
 Caption for tables/figures.
@@ -632,6 +747,42 @@ if err != nil {
     return err
 }
 updater.UpdateChart(newIndex, newData)
+```
+
+#### InsertChart
+
+```go
+func (u *Updater) InsertChart(opts ChartOptions) error
+```
+
+Creates a new chart with embedded Excel workbook and inserts it into the document.
+
+**Parameters:**
+- `opts`: Chart options including type, data, positioning, and styling
+
+**Returns:**
+- `error`: Invalid options, creation failed, or insertion failed
+
+**Validation:**
+- Categories must not be empty
+- At least one series required
+- All series values must match categories length
+- Chart type must be valid
+
+**Example:**
+```go
+err := updater.InsertChart(docxupdater.ChartOptions{
+    Position:  docxupdater.PositionEnd,
+    ChartKind: docxupdater.ChartKindColumn,
+    Title:     "Sales by Quarter",
+    Categories: []string{"Q1", "Q2", "Q3", "Q4"},
+    Series: []docxupdater.SeriesData{
+        {Name: "2023", Values: []float64{100, 150, 120, 180}},
+        {Name: "2024", Values: []float64{120, 170, 140, 200}},
+    },
+    ShowLegend:     true,
+    LegendPosition: "r",
+})
 ```
 
 ### Document Operations
@@ -887,6 +1038,185 @@ func (u *Updater) SetFooter(content HeaderFooterContent, opts FooterOptions) err
 ```
 
 Sets or creates a document footer.
+
+### Document Properties Operations
+
+#### SetCoreProperties
+
+```go
+func (u *Updater) SetCoreProperties(props CoreProperties) error
+```
+
+Sets the core document properties (metadata).
+
+**Parameters:**
+- `props`: Core properties including title, author, subject, keywords, etc.
+
+**Returns:**
+- `error`: File write failed, XML generation failed
+
+**Example:**
+```go
+err := updater.SetCoreProperties(docxupdater.CoreProperties{
+    Title:       "Annual Report 2024",
+    Subject:     "Financial Performance",
+    Creator:     "Finance Department",
+    Keywords:    "finance, annual, report, 2024",
+    Description: "Comprehensive financial report for fiscal year 2024",
+    Category:    "Financial Reports",
+})
+```
+
+#### SetAppProperties
+
+```go
+func (u *Updater) SetAppProperties(props AppProperties) error
+```
+
+Sets application-specific document properties.
+
+**Parameters:**
+- `props`: Application properties including company, manager, application name
+
+**Returns:**
+- `error`: File write failed, XML generation failed
+
+**Example:**
+```go
+err := updater.SetAppProperties(docxupdater.AppProperties{
+    Company:     "Acme Corporation",
+    Manager:     "John Smith",
+    Application: "Microsoft Word",
+    AppVersion:  "16.0000",
+})
+```
+
+#### SetCustomProperties
+
+```go
+func (u *Updater) SetCustomProperties(properties []CustomProperty) error
+```
+
+Sets custom document properties with typed values.
+
+**Parameters:**
+- `properties`: Slice of custom properties with names and typed values
+
+**Returns:**
+- `error`: Type inference failed, XML generation failed, file write failed
+
+**Supported value types:**
+- `string` → lpwstr
+- `int` → i4
+- `float64` → r8
+- `bool` → bool
+- `time.Time` → filetime
+
+**Example:**
+```go
+err := updater.SetCustomProperties([]docxupdater.CustomProperty{
+    {Name: "ProjectCode", Value: "PRJ-2024-001"},
+    {Name: "Budget", Value: 150000.50},
+    {Name: "Approved", Value: true},
+    {Name: "ReviewDate", Value: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)},
+})
+```
+
+#### GetCoreProperties
+
+```go
+func (u *Updater) GetCoreProperties() (*CoreProperties, error)
+```
+
+Retrieves the current core document properties.
+
+**Returns:**
+- `*CoreProperties`: Current document metadata
+- `error`: File not found, XML parse failed
+
+**Example:**
+```go
+props, err := updater.GetCoreProperties()
+if err != nil {
+    return err
+}
+fmt.Printf("Title: %s\n", props.Title)
+fmt.Printf("Author: %s\n", props.Creator)
+fmt.Printf("Created: %s\n", props.Created.Format("2006-01-02"))
+```
+
+### Bookmark Operations
+
+#### CreateBookmark
+
+```go
+func (u *Updater) CreateBookmark(name string, opts BookmarkOptions) error
+```
+
+Creates an empty bookmark marker at the specified position.
+
+**Parameters:**
+- `name`: Bookmark name (must be valid Word bookmark name)
+- `opts`: Bookmark options including position and styling
+
+**Returns:**
+- `error`: Invalid name, position not found, or creation failed
+
+**Bookmark name rules:**
+- Must start with a letter
+- Can contain letters, digits, and underscores
+- No spaces or special characters
+- Maximum 40 characters
+
+**Example:**
+```go
+// Create hidden bookmark at document end
+err := updater.CreateBookmark("section_start", docxupdater.BookmarkOptions{
+    Position: docxupdater.PositionEnd,
+    Hidden:   true,
+})
+
+// Create bookmark after specific text
+err := updater.CreateBookmark("summary", docxupdater.BookmarkOptions{
+    Position: docxupdater.PositionAfterText,
+    Anchor:   "Executive Summary",
+})
+```
+
+#### CreateBookmarkWithText
+
+```go
+func (u *Updater) CreateBookmarkWithText(name, text string, opts BookmarkOptions) error
+```
+
+Creates a bookmark that wraps specific text content.
+
+**Parameters:**
+- `name`: Bookmark name (must be valid Word bookmark name)
+- `text`: Text content to bookmark
+- `opts`: Bookmark options including position and styling
+
+**Returns:**
+- `error`: Invalid name, empty text, position not found, or creation failed
+
+**Example:**
+```go
+err := updater.CreateBookmarkWithText(
+    "important_section",
+    "Critical Information",
+    docxupdater.BookmarkOptions{
+        Position: docxupdater.PositionAfterText,
+        Anchor:   "Introduction",
+        Style:    docxupdater.StyleHeading2,
+    },
+)
+```
+
+**Use cases:**
+- Creating navigation targets for `InsertInternalLink()`
+- Document structure markers
+- Cross-reference anchors
+- Table of contents generation
 
 ---
 

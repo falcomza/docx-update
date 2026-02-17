@@ -40,7 +40,7 @@ The DOCX Chart Updater is a Go library for programmatically manipulating Microso
 | Category | Methods |
 |----------|---------|
 | **Lifecycle** | `New()`, `Save()`, `Cleanup()`, `TempDir()` |
-| **Charts** | `UpdateChart()`, `CopyChart()` |
+| **Charts** | `UpdateChart()`, `CopyChart()`, `InsertChart()` |
 | **Tables** | `InsertTable()` |
 | **Images** | `InsertImage()` |
 | **Paragraphs** | `InsertParagraph()`, `InsertParagraphs()`, `AddHeading()`, `AddText()` |
@@ -49,6 +49,8 @@ The DOCX Chart Updater is a Go library for programmatically manipulating Microso
 | **Breaks** | `InsertPageBreak()`, `InsertSectionBreak()` |
 | **Hyperlinks** | `InsertHyperlink()`, `InsertInternalLink()` |
 | **Headers/Footers** | `SetHeader()`, `SetFooter()` |
+| **Properties** | `SetCoreProperties()`, `SetAppProperties()`, `SetCustomProperties()`, `GetCoreProperties()` |
+| **Bookmarks** | `CreateBookmark()`, `CreateBookmarkWithText()` |
 
 ### Key Design Principles
 
@@ -605,6 +607,238 @@ updater.SetFooter(docxupdater.HeaderFooterContent{
     PageNumber: true,
 }, docxupdater.DefaultFooterOptions())
 ```
+
+### Document Properties Operations
+
+#### `SetCoreProperties(props CoreProperties) error`
+
+Sets the core document properties (metadata).
+
+**Properties:**
+```go
+type CoreProperties struct {
+    Title          string    // Document title
+    Subject        string    // Document subject
+    Creator        string    // Author name
+    Keywords       string    // Keywords (comma-separated)
+    Description    string    // Description/comments
+    Category       string    // Document category
+    Created        time.Time // Creation date
+    Modified       time.Time // Modification date
+    LastModifiedBy string    // Last modifier name
+    Revision       string    // Revision number
+}
+```
+
+**Example:**
+```go
+updater.SetCoreProperties(docxupdater.CoreProperties{
+    Title:       "Quarterly Financial Report",
+    Subject:     "Q4 2024 Financials",
+    Creator:     "John Doe",
+    Keywords:    "finance, quarterly, report",
+    Description: "Financial performance metrics for Q4 2024",
+    Category:    "Reports",
+})
+```
+
+#### `SetAppProperties(props AppProperties) error`
+
+Sets application-specific document properties.
+
+**Properties:**
+```go
+type AppProperties struct {
+    Company     string // Company name
+    Manager     string // Manager name
+    Application string // Application name (typically Microsoft Word)
+    AppVersion  string // Application version
+}
+```
+
+**Example:**
+```go
+updater.SetAppProperties(docxupdater.AppProperties{
+    Company:     "Acme Corporation",
+    Manager:     "Jane Smith",
+    Application: "Microsoft Word",
+    AppVersion:  "16.0000",
+})
+```
+
+#### `SetCustomProperties(properties []CustomProperty) error`
+
+Sets custom document properties with typed values.
+
+**Custom Property Structure:**
+```go
+type CustomProperty struct {
+    Name  string      // Property name
+    Value interface{} // Property value (string, int, float64, bool, or time.Time)
+    Type  string      // Type (auto-inferred if empty)
+}
+```
+
+**Supported Types:**
+- `string` → "lpwstr"
+- `int` → "i4"
+- `float64` → "r8"
+- `bool` → "bool"
+- `time.Time` → "filetime"
+
+**Example:**
+```go
+updater.SetCustomProperties([]docxupdater.CustomProperty{
+    {Name: "ProjectCode", Value: "PRJ-2024-001"},
+    {Name: "Budget", Value: 150000.50},
+    {Name: "Approved", Value: true},
+    {Name: "DueDate", Value: time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)},
+})
+```
+
+#### `GetCoreProperties() (*CoreProperties, error)`
+
+Retrieves the current core document properties.
+
+**Returns:**
+- `*CoreProperties`: Current document properties
+- `error`: Parse error or file not found
+
+**Example:**
+```go
+props, err := updater.GetCoreProperties()
+if err != nil {
+    return err
+}
+fmt.Printf("Document Title: %s\n", props.Title)
+fmt.Printf("Author: %s\n", props.Creator)
+```
+
+### Bookmark Operations
+
+#### `CreateBookmark(name string, opts BookmarkOptions) error`
+
+Creates an empty bookmark marker at the specified position.
+
+**Options:**
+```go
+type BookmarkOptions struct {
+    Position InsertPosition // Where to create bookmark
+    Anchor   string         // Anchor text for relative positioning
+    Style    ParagraphStyle // Style for bookmarked text
+    Hidden   bool           // Invisible marker (default: true)
+}
+```
+
+**Example:**
+```go
+// Create bookmark at document end
+updater.CreateBookmark("section-start", docxupdater.BookmarkOptions{
+    Position: docxupdater.PositionEnd,
+    Hidden:   true,
+})
+
+// Create bookmark after specific text
+updater.CreateBookmark("summary-section", docxupdater.BookmarkOptions{
+    Position: docxupdater.PositionAfterText,
+    Anchor:   "Executive Summary",
+})
+```
+
+#### `CreateBookmarkWithText(name, text string, opts BookmarkOptions) error`
+
+Creates a bookmark that wraps specific text content.
+
+**Example:**
+```go
+updater.CreateBookmarkWithText("important-note", "Critical Information", docxupdater.BookmarkOptions{
+    Position: docxupdater.PositionAfterText,
+    Anchor:   "Introduction",
+    Style:    docxupdater.StyleHeading2,
+})
+```
+
+**Use Cases:**
+- Navigation targets for internal hyperlinks
+- Document structure markers
+- Cross-reference anchors
+- Table of contents generation
+
+### Chart Creation
+
+#### `InsertChart(opts ChartOptions) error`
+
+Creates a new chart with embedded Excel workbook and inserts it into the document.
+
+**Key Options:**
+```go
+type ChartOptions struct {
+    // Positioning
+    Position InsertPosition
+    Anchor   string
+
+    // Chart type
+    ChartKind ChartKind // Column, Bar, Line, Pie, Area
+
+    // Titles
+    Title             string // Main chart title
+    CategoryAxisTitle string // X-axis title
+    ValueAxisTitle    string // Y-axis title
+
+    // Data
+    Categories []string     // Category labels
+    Series     []SeriesData // Data series
+
+    // Legend
+    ShowLegend     bool   // Display legend (default: true)
+    LegendPosition string // Position: "r", "l", "t", "b"
+
+    // Dimensions (EMUs - English Metric Units)
+    Width  int // Width in EMUs, 0 for default
+    Height int // Height in EMUs, 0 for default
+
+    // Caption
+    Caption *CaptionOptions
+}
+```
+
+**Chart Types:**
+```go
+const (
+    ChartKindColumn ChartKind = "barChart"  // Vertical bars
+    ChartKindBar    ChartKind = "barChart"  // Horizontal bars
+    ChartKindLine   ChartKind = "lineChart" // Line chart
+    ChartKindPie    ChartKind = "pieChart"  // Pie chart
+    ChartKindArea   ChartKind = "areaChart" // Area chart
+)
+```
+
+**Example:**
+```go
+updater.InsertChart(docxupdater.ChartOptions{
+    Position:  docxupdater.PositionEnd,
+    ChartKind: docxupdater.ChartKindColumn,
+    Title:     "Sales Performance",
+    Categories: []string{"Q1", "Q2", "Q3", "Q4"},
+    Series: []docxupdater.SeriesData{
+        {Name: "2023", Values: []float64{100, 150, 120, 180}},
+        {Name: "2024", Values: []float64{120, 170, 140, 200}},
+    },
+    ShowLegend:     true,
+    LegendPosition: "r", // Right side
+    Caption: &docxupdater.CaptionOptions{
+        Type:        docxupdater.CaptionFigure,
+        Description: "Quarterly sales comparison",
+        AutoNumber:  true,
+    },
+})
+```
+
+**Differences from UpdateChart:**
+- `InsertChart` creates a new chart from scratch
+- `UpdateChart` modifies an existing chart in the template
+- Use `InsertChart` when you need to add charts dynamically
+- Use `UpdateChart` when working with pre-designed templates
 
 ---
 
