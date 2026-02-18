@@ -24,6 +24,14 @@ const (
 	StyleListBullet ParagraphStyle = "ListBullet"
 )
 
+// ListType defines the type of list
+type ListType string
+
+const (
+	ListTypeBullet   ListType = "bullet"   // Bullet list (•)
+	ListTypeNumbered ListType = "numbered" // Numbered list (1, 2, 3...)
+)
+
 // InsertPosition defines where to insert the paragraph
 type InsertPosition int
 
@@ -47,6 +55,10 @@ type ParagraphOptions struct {
 	Bold      bool           // Make text bold
 	Italic    bool           // Make text italic
 	Underline bool           // Underline text
+
+	// List properties (alternative to Style-based lists)
+	ListType  ListType // Type of list (bullet or numbered)
+	ListLevel int      // Indentation level (0-8, default 0)
 }
 
 // InsertParagraph inserts a new paragraph into the document
@@ -61,6 +73,13 @@ func (u *Updater) InsertParagraph(opts ParagraphOptions) error {
 	// Default style to Normal if not specified
 	if opts.Style == "" {
 		opts.Style = StyleNormal
+	}
+
+	// Ensure numbering.xml exists if using lists
+	if opts.ListType != "" {
+		if err := u.ensureNumberingXML(); err != nil {
+			return fmt.Errorf("ensure numbering: %w", err)
+		}
 	}
 
 	// Read document.xml
@@ -103,11 +122,40 @@ func generateParagraphXML(opts ParagraphOptions) []byte {
 
 	buf.WriteString("<w:p>")
 
-	// Add paragraph properties including style
+	// Add paragraph properties including style and list numbering
 	buf.WriteString("<w:pPr>")
+
+	// Add style if specified
 	if opts.Style != StyleNormal {
 		buf.WriteString(fmt.Sprintf(`<w:pStyle w:val="%s"/>`, opts.Style))
 	}
+
+	// Add numbering properties if ListType is specified
+	if opts.ListType != "" {
+		var numID int
+		if opts.ListType == ListTypeBullet {
+			numID = BulletListNumID
+		} else if opts.ListType == ListTypeNumbered {
+			numID = NumberedListNumID
+		}
+
+		if numID > 0 {
+			// Validate and constrain list level
+			level := opts.ListLevel
+			if level < 0 {
+				level = 0
+			}
+			if level > 8 {
+				level = 8
+			}
+
+			buf.WriteString("<w:numPr>")
+			buf.WriteString(fmt.Sprintf(`<w:ilvl w:val="%d"/>`, level))
+			buf.WriteString(fmt.Sprintf(`<w:numId w:val="%d"/>`, numID))
+			buf.WriteString("</w:numPr>")
+		}
+	}
+
 	buf.WriteString("</w:pPr>")
 
 	// Add text run
@@ -293,4 +341,52 @@ func (u *Updater) AddText(text string, position InsertPosition) error {
 		Style:    StyleNormal,
 		Position: position,
 	})
+}
+
+// AddBulletItem adds a bullet list item at the specified level (0-8)
+func (u *Updater) AddBulletItem(text string, level int, position InsertPosition) error {
+	return u.InsertParagraph(ParagraphOptions{
+		Text:      text,
+		ListType:  ListTypeBullet,
+		ListLevel: level,
+		Position:  position,
+	})
+}
+
+// AddNumberedItem adds a numbered list item at the specified level (0-8)
+func (u *Updater) AddNumberedItem(text string, level int, position InsertPosition) error {
+	return u.InsertParagraph(ParagraphOptions{
+		Text:      text,
+		ListType:  ListTypeNumbered,
+		ListLevel: level,
+		Position:  position,
+	})
+}
+
+// AddBulletList adds multiple bullet list items in batch
+func (u *Updater) AddBulletList(items []string, level int, position InsertPosition) error {
+	paragraphs := make([]ParagraphOptions, len(items))
+	for i, item := range items {
+		paragraphs[i] = ParagraphOptions{
+			Text:      item,
+			ListType:  ListTypeBullet,
+			ListLevel: level,
+			Position:  position,
+		}
+	}
+	return u.InsertParagraphs(paragraphs)
+}
+
+// AddNumberedList adds multiple numbered list items in batch
+func (u *Updater) AddNumberedList(items []string, level int, position InsertPosition) error {
+	paragraphs := make([]ParagraphOptions, len(items))
+	for i, item := range items {
+		paragraphs[i] = ParagraphOptions{
+			Text:      item,
+			ListType:  ListTypeNumbered,
+			ListLevel: level,
+			Position:  position,
+		}
+	}
+	return u.InsertParagraphs(paragraphs)
 }

@@ -207,14 +207,14 @@ func TestApplyExtendedChartDefaults(t *testing.T) {
 			Series:     []SeriesOptions{{Name: "S1", Values: []float64{1}}},
 		}
 		result := applyExtendedChartDefaults(opts)
-		
+
 		if result.CategoryAxis == nil {
 			t.Fatal("Expected category axis to be initialized")
 		}
 		if result.CategoryAxis.Position != AxisPositionBottom {
 			t.Errorf("Expected category axis position bottom, got %v", result.CategoryAxis.Position)
 		}
-		
+
 		if result.ValueAxis == nil {
 			t.Fatal("Expected value axis to be initialized")
 		}
@@ -233,7 +233,7 @@ func TestApplyExtendedChartDefaults(t *testing.T) {
 			Series:     []SeriesOptions{{Name: "S1", Values: []float64{1}}},
 		}
 		result := applyExtendedChartDefaults(opts)
-		
+
 		if result.BarChartOptions == nil {
 			t.Fatal("Expected bar chart options to be initialized")
 		}
@@ -254,7 +254,7 @@ func TestApplyExtendedChartDefaults(t *testing.T) {
 			Series:     []SeriesOptions{{Name: "S1", Values: []float64{1}}},
 		}
 		result := applyExtendedChartDefaults(opts)
-		
+
 		if result.Properties == nil {
 			t.Fatal("Expected properties to be initialized")
 		}
@@ -279,15 +279,15 @@ func TestGenerateExtendedChartXML(t *testing.T) {
 			},
 		}
 		opts = applyExtendedChartDefaults(opts)
-		
+
 		xml := generateExtendedChartXML(opts)
 		xmlStr := string(xml)
-		
+
 		// Verify XML declaration
 		if !containsString(xmlStr, "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>") {
 			t.Error("Missing XML declaration")
 		}
-		
+
 		// Verify namespaces
 		requiredNamespaces := []string{
 			"xmlns:c=\"http://schemas.openxmlformats.org/drawingml/2006/chart\"",
@@ -299,7 +299,7 @@ func TestGenerateExtendedChartXML(t *testing.T) {
 				t.Errorf("Missing namespace: %s", ns)
 			}
 		}
-		
+
 		// Verify chart properties
 		if !containsString(xmlStr, "<c:date1904") {
 			t.Error("Missing date1904 property")
@@ -315,7 +315,7 @@ func TestGenerateExtendedChartXML(t *testing.T) {
 	t.Run("generates XML with custom axes", func(t *testing.T) {
 		minVal := 0.0
 		maxVal := 100.0
-		
+
 		opts := ExtendedChartOptions{
 			Categories: []string{"A", "B"},
 			Series: []SeriesOptions{
@@ -329,9 +329,9 @@ func TestGenerateExtendedChartXML(t *testing.T) {
 			},
 		}
 		opts = applyExtendedChartDefaults(opts)
-		
+
 		xml := string(generateExtendedChartXML(opts))
-		
+
 		if !containsString(xml, "Custom Axis") {
 			t.Error("Missing custom axis title")
 		}
@@ -350,15 +350,15 @@ func TestGenerateExtendedChartXML(t *testing.T) {
 				{Name: "Series1", Values: []float64{10, 20}},
 			},
 			DataLabels: &DataLabelOptions{
-				ShowValue:    true,
-				ShowPercent:  false,
-				Position:     DataLabelOutsideEnd,
+				ShowValue:   true,
+				ShowPercent: false,
+				Position:    DataLabelOutsideEnd,
 			},
 		}
 		opts = applyExtendedChartDefaults(opts)
-		
+
 		xml := string(generateExtendedChartXML(opts))
-		
+
 		if !containsString(xml, "<c:showVal val=\"1\"") {
 			t.Error("Missing showVal=1 for data labels")
 		}
@@ -379,9 +379,9 @@ func TestGenerateExtendedChartXML(t *testing.T) {
 			},
 		}
 		opts = applyExtendedChartDefaults(opts)
-		
+
 		xml := string(generateExtendedChartXML(opts))
-		
+
 		if !containsString(xml, "FF0000") {
 			t.Error("Missing custom color")
 		}
@@ -413,9 +413,9 @@ func TestChartTypeXMLGeneration(t *testing.T) {
 			opts := baseOpts
 			opts.ChartKind = tt.chartKind
 			opts = applyExtendedChartDefaults(opts)
-			
+
 			xml := string(generateExtendedChartXML(opts))
-			
+
 			if !containsString(xml, tt.contains) {
 				t.Errorf("Expected XML to contain %s", tt.contains)
 			}
@@ -437,9 +437,9 @@ func TestLineChartSpecificOptions(t *testing.T) {
 		},
 	}
 	opts = applyExtendedChartDefaults(opts)
-	
+
 	xml := string(generateExtendedChartXML(opts))
-	
+
 	if !containsString(xml, "<c:smooth val=\"1\"") {
 		t.Error("Missing smooth line option")
 	}
@@ -474,7 +474,7 @@ func ptrFloat(f float64) *float64 {
 }
 
 func containsString(s, substr string) bool {
-	return len(s) > 0 && len(substr) > 0 && 
+	return len(s) > 0 && len(substr) > 0 &&
 		(s == substr || len(s) >= len(substr) && findSubstring(s, substr))
 }
 

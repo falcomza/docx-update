@@ -720,7 +720,7 @@ func validateExtendedChartOptions(opts ExtendedChartOptions) error {
 			return fmt.Errorf("series[%d] name cannot be empty", i)
 		}
 		if len(series.Values) != len(opts.Categories) {
-			return fmt.Errorf("series[%d] values length (%d) must match categories length (%d)", 
+			return fmt.Errorf("series[%d] values length (%d) must match categories length (%d)",
 				i, len(series.Values), len(opts.Categories))
 		}
 	}
@@ -851,9 +851,9 @@ func applyAxisDefaults(axis *AxisOptions, isCategoryAxis bool) *AxisOptions {
 	if axis == nil {
 		axis = &AxisOptions{}
 	}
-	
+
 	axis.Visible = true // Always visible by default
-	
+
 	if axis.Position == "" {
 		if isCategoryAxis {
 			axis.Position = AxisPositionBottom
@@ -861,7 +861,7 @@ func applyAxisDefaults(axis *AxisOptions, isCategoryAxis bool) *AxisOptions {
 			axis.Position = AxisPositionLeft
 		}
 	}
-	
+
 	if axis.MajorTickMark == "" {
 		axis.MajorTickMark = TickMarkOut
 	}
@@ -874,12 +874,12 @@ func applyAxisDefaults(axis *AxisOptions, isCategoryAxis bool) *AxisOptions {
 	if axis.NumberFormat == "" {
 		axis.NumberFormat = "General"
 	}
-	
+
 	// Value axis has major gridlines by default
 	if !isCategoryAxis {
 		axis.MajorGridlines = true
 	}
-	
+
 	return axis
 }
 
@@ -1158,7 +1158,7 @@ func generateSeriesXML(index int, series SeriesOptions, opts ExtendedChartOption
 
 	// Series name
 	buf.WriteString(fmt.Sprintf(`<c:tx><c:strRef><c:f>Sheet1!$%s$1</c:f>`, columnLetter(index+2)))
-	buf.WriteString(fmt.Sprintf(`<c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>%s</c:v></c:pt></c:strCache></c:strRef></c:tx>`, 
+	buf.WriteString(fmt.Sprintf(`<c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>%s</c:v></c:pt></c:strCache></c:strRef></c:tx>`,
 		xmlEscape(series.Name)))
 
 	// Shape properties (color, etc.)
@@ -1186,7 +1186,7 @@ func generateSeriesXML(index int, series SeriesOptions, opts ExtendedChartOption
 
 	// Values
 	colLetter := columnLetter(index + 2)
-	buf.WriteString(fmt.Sprintf(`<c:val><c:numRef><c:f>Sheet1!$%s$2:$%s$%d</c:f>`, 
+	buf.WriteString(fmt.Sprintf(`<c:val><c:numRef><c:f>Sheet1!$%s$2:$%s$%d</c:f>`,
 		colLetter, colLetter, len(opts.Categories)+1))
 	buf.WriteString(fmt.Sprintf(`<c:numCache><c:formatCode>General</c:formatCode><c:ptCount val="%d"/>`, len(series.Values)))
 	for j, val := range series.Values {
@@ -1242,7 +1242,7 @@ func generateCategoryAxisXML(axis *AxisOptions) string {
 
 	buf.WriteString(`<c:catAx>`)
 	buf.WriteString(`<c:axId val="2071991400"/>`)
-	
+
 	// Scaling
 	buf.WriteString(`<c:scaling>`)
 	if axis.Min != nil {
@@ -1273,7 +1273,7 @@ func generateCategoryAxisXML(axis *AxisOptions) string {
 	buf.WriteString(fmt.Sprintf(`<c:tickLblPos val="%s"/>`, axis.TickLabelPos))
 
 	buf.WriteString(`<c:crossAx val="2071991240"/>`)
-	
+
 	if axis.CrossesAt != nil {
 		buf.WriteString(fmt.Sprintf(`<c:crossesAt val="%g"/>`, *axis.CrossesAt))
 	} else {
@@ -1300,7 +1300,7 @@ func generateValueAxisXML(axis *AxisOptions) string {
 
 	buf.WriteString(`<c:valAx>`)
 	buf.WriteString(`<c:axId val="2071991240"/>`)
-	
+
 	// Scaling
 	buf.WriteString(`<c:scaling>`)
 	if axis.Min != nil {
@@ -1326,7 +1326,7 @@ func generateValueAxisXML(axis *AxisOptions) string {
 	}
 
 	buf.WriteString(fmt.Sprintf(`<c:numFmt formatCode="%s" sourceLinked="0"/>`, axis.NumberFormat))
-	
+
 	if axis.MajorUnit != nil {
 		buf.WriteString(fmt.Sprintf(`<c:majorUnit val="%g"/>`, *axis.MajorUnit))
 	}
@@ -1339,7 +1339,7 @@ func generateValueAxisXML(axis *AxisOptions) string {
 	buf.WriteString(fmt.Sprintf(`<c:tickLblPos val="%s"/>`, axis.TickLabelPos))
 
 	buf.WriteString(`<c:crossAx val="2071991400"/>`)
-	
+
 	if axis.CrossesAt != nil {
 		buf.WriteString(fmt.Sprintf(`<c:crossesAt val="%g"/>`, *axis.CrossesAt))
 	} else {

@@ -4,11 +4,11 @@ package docxupdater
 type ChartStyle int
 
 const (
-	ChartStyleNone     ChartStyle = 0  // No specific style
-	ChartStyle1        ChartStyle = 1  // Style 1
-	ChartStyle2        ChartStyle = 2  // Style 2 (default in many templates)
-	ChartStyle3        ChartStyle = 3  // Style 3
-	ChartStyleColorful ChartStyle = 10 // Colorful style
+	ChartStyleNone       ChartStyle = 0  // No specific style
+	ChartStyle1          ChartStyle = 1  // Style 1
+	ChartStyle2          ChartStyle = 2  // Style 2 (default in many templates)
+	ChartStyle3          ChartStyle = 3  // Style 3
+	ChartStyleColorful   ChartStyle = 10 // Colorful style
 	ChartStyleMonochrome ChartStyle = 42 // Monochrome style
 )
 
@@ -16,11 +16,11 @@ const (
 type DataLabelPosition string
 
 const (
-	DataLabelCenter      DataLabelPosition = "ctr"     // Center of data point
-	DataLabelInsideEnd   DataLabelPosition = "inEnd"   // Inside end
-	DataLabelInsideBase  DataLabelPosition = "inBase"  // Inside base
-	DataLabelOutsideEnd  DataLabelPosition = "outEnd"  // Outside end
-	DataLabelBestFit     DataLabelPosition = "bestFit" // Best fit (auto)
+	DataLabelCenter     DataLabelPosition = "ctr"     // Center of data point
+	DataLabelInsideEnd  DataLabelPosition = "inEnd"   // Inside end
+	DataLabelInsideBase DataLabelPosition = "inBase"  // Inside base
+	DataLabelOutsideEnd DataLabelPosition = "outEnd"  // Outside end
+	DataLabelBestFit    DataLabelPosition = "bestFit" // Best fit (auto)
 )
 
 // AxisPosition defines axis position
@@ -37,10 +37,10 @@ const (
 type TickMark string
 
 const (
-	TickMarkCross  TickMark = "cross" // Cross
-	TickMarkIn     TickMark = "in"    // Inside
-	TickMarkNone   TickMark = "none"  // None
-	TickMarkOut    TickMark = "out"   // Outside (default)
+	TickMarkCross TickMark = "cross" // Cross
+	TickMarkIn    TickMark = "in"    // Inside
+	TickMarkNone  TickMark = "none"  // None
+	TickMarkOut   TickMark = "out"   // Outside (default)
 )
 
 // TickLabelPosition defines tick label position
@@ -67,53 +67,53 @@ const (
 type BarDirection string
 
 const (
-	BarDirectionColumn     BarDirection = "col" // Vertical bars (column chart)
-	BarDirectionBar        BarDirection = "bar" // Horizontal bars (bar chart)
+	BarDirectionColumn BarDirection = "col" // Vertical bars (column chart)
+	BarDirectionBar    BarDirection = "bar" // Horizontal bars (bar chart)
 )
 
 // DataLabelOptions defines options for data labels on chart elements
 type DataLabelOptions struct {
-	ShowValue      bool                 // Show values on data points (default: false)
-	ShowCategoryName bool               // Show category names (default: false)
-	ShowSeriesName bool                 // Show series names (default: false)
-	ShowPercent    bool                 // Show percentage (for pie charts) (default: false)
-	ShowLegendKey  bool                 // Show legend key (default: false)
-	Position       DataLabelPosition    // Label position (default: bestFit)
-	ShowLeaderLines bool                // Show leader lines for pie charts (default: true)
+	ShowValue        bool              // Show values on data points (default: false)
+	ShowCategoryName bool              // Show category names (default: false)
+	ShowSeriesName   bool              // Show series names (default: false)
+	ShowPercent      bool              // Show percentage (for pie charts) (default: false)
+	ShowLegendKey    bool              // Show legend key (default: false)
+	Position         DataLabelPosition // Label position (default: bestFit)
+	ShowLeaderLines  bool              // Show leader lines for pie charts (default: true)
 }
 
 // AxisOptions defines comprehensive axis customization
 type AxisOptions struct {
 	// Basic properties
-	Title          string           // Axis title
-	TitleOverlay   bool             // Title overlays chart area (default: false)
-	
+	Title        string // Axis title
+	TitleOverlay bool   // Title overlays chart area (default: false)
+
 	// Scale properties
-	Min            *float64         // Minimum value (nil for auto)
-	Max            *float64         // Maximum value (nil for auto)
-	MajorUnit      *float64         // Major unit interval (nil for auto)
-	MinorUnit      *float64         // Minor unit interval (nil for auto)
-	
+	Min       *float64 // Minimum value (nil for auto)
+	Max       *float64 // Maximum value (nil for auto)
+	MajorUnit *float64 // Major unit interval (nil for auto)
+	MinorUnit *float64 // Minor unit interval (nil for auto)
+
 	// Display properties
-	Visible        bool             // Show axis (default: true)
-	Position       AxisPosition     // Axis position
-	
+	Visible  bool         // Show axis (default: true)
+	Position AxisPosition // Axis position
+
 	// Tick marks
-	MajorTickMark  TickMark         // Major tick mark style (default: out)
-	MinorTickMark  TickMark         // Minor tick mark style (default: none)
-	
+	MajorTickMark TickMark // Major tick mark style (default: out)
+	MinorTickMark TickMark // Minor tick mark style (default: none)
+
 	// Tick labels
-	TickLabelPos   TickLabelPosition // Tick label position (default: nextTo)
-	
+	TickLabelPos TickLabelPosition // Tick label position (default: nextTo)
+
 	// Number format
-	NumberFormat   string           // Number format code (e.g., "0.00", "#,##0")
-	
+	NumberFormat string // Number format code (e.g., "0.00", "#,##0")
+
 	// Gridlines
-	MajorGridlines bool             // Show major gridlines (default: true for value axis)
-	MinorGridlines bool             // Show minor gridlines (default: false)
-	
+	MajorGridlines bool // Show major gridlines (default: true for value axis)
+	MinorGridlines bool // Show minor gridlines (default: false)
+
 	// Crossing
-	CrossesAt      *float64         // Where axis crosses (nil for auto)
+	CrossesAt *float64 // Where axis crosses (nil for auto)
 }
 
 // LegendOptions defines legend customization
@@ -125,38 +125,38 @@ type LegendOptions struct {
 
 // SeriesOptions defines per-series customization
 type SeriesOptions struct {
-	Name            string            // Series name
-	Values          []float64         // Data values
-	Color           string            // Hex color (e.g., "FF0000")
-	InvertIfNegative bool             // Use different color for negative values (default: false)
-	Smooth          bool              // Smooth lines (for line charts) (default: false)
-	ShowMarkers     bool              // Show markers (for line charts) (default: false)
-	DataLabels      *DataLabelOptions // Data labels for this series (nil for default)
+	Name             string            // Series name
+	Values           []float64         // Data values
+	Color            string            // Hex color (e.g., "FF0000")
+	InvertIfNegative bool              // Use different color for negative values (default: false)
+	Smooth           bool              // Smooth lines (for line charts) (default: false)
+	ShowMarkers      bool              // Show markers (for line charts) (default: false)
+	DataLabels       *DataLabelOptions // Data labels for this series (nil for default)
 }
 
 // ChartProperties defines chart-level properties
 type ChartProperties struct {
 	// Appearance
-	Style           ChartStyle // Chart style (0-48, 0=none, default: 2)
-	RoundedCorners  bool       // Use rounded corners (default: false)
-	
+	Style          ChartStyle // Chart style (0-48, 0=none, default: 2)
+	RoundedCorners bool       // Use rounded corners (default: false)
+
 	// Behavior
-	Date1904        bool       // Use 1904 date system (Mac compatibility) (default: false)
-	Language        string     // Language code (e.g., "en-US", "en-GB") (default: "en-US")
-	
+	Date1904 bool   // Use 1904 date system (Mac compatibility) (default: false)
+	Language string // Language code (e.g., "en-US", "en-GB") (default: "en-US")
+
 	// Display options
-	PlotVisibleOnly bool       // Plot only visible cells (default: true)
-	DisplayBlanksAs string     // How to display blank cells: "gap", "zero", "span" (default: "gap")
-	ShowDataLabelsOverMax bool // Show data labels even if over max (default: false)
+	PlotVisibleOnly       bool   // Plot only visible cells (default: true)
+	DisplayBlanksAs       string // How to display blank cells: "gap", "zero", "span" (default: "gap")
+	ShowDataLabelsOverMax bool   // Show data labels even if over max (default: false)
 }
 
 // BarChartOptions defines options specific to bar/column charts
 type BarChartOptions struct {
-	Direction    BarDirection // Bar direction (default: col for column)
-	Grouping     BarGrouping  // Grouping type (default: clustered)
-	GapWidth     int          // Gap between bar groups (0-500, default: 150)
-	Overlap      int          // Overlap of bars (-100 to 100, default: 0)
-	VaryColors   bool         // Vary colors by point (default: false)
+	Direction  BarDirection // Bar direction (default: col for column)
+	Grouping   BarGrouping  // Grouping type (default: clustered)
+	GapWidth   int          // Gap between bar groups (0-500, default: 150)
+	Overlap    int          // Overlap of bars (-100 to 100, default: 0)
+	VaryColors bool         // Vary colors by point (default: false)
 }
 
 // ExtendedChartOptions defines comprehensive chart creation options with all customization
@@ -164,38 +164,38 @@ type ExtendedChartOptions struct {
 	// Position and basic info
 	Position InsertPosition
 	Anchor   string
-	
+
 	// Chart type
 	ChartKind ChartKind
-	
+
 	// Titles
-	Title             string
-	TitleOverlay      bool
-	
+	Title        string
+	TitleOverlay bool
+
 	// Data
-	Categories        []string
-	Series            []SeriesOptions // Extended series with per-series options
-	
+	Categories []string
+	Series     []SeriesOptions // Extended series with per-series options
+
 	// Axes
-	CategoryAxis      *AxisOptions
-	ValueAxis         *AxisOptions
-	
+	CategoryAxis *AxisOptions
+	ValueAxis    *AxisOptions
+
 	// Legend
-	Legend            *LegendOptions
-	
+	Legend *LegendOptions
+
 	// Data labels (default for all series)
-	DataLabels        *DataLabelOptions
-	
+	DataLabels *DataLabelOptions
+
 	// Chart-level properties
-	Properties        *ChartProperties
-	
+	Properties *ChartProperties
+
 	// Chart type specific options
-	BarChartOptions   *BarChartOptions
-	
+	BarChartOptions *BarChartOptions
+
 	// Dimensions
-	Width             int
-	Height            int
-	
+	Width  int
+	Height int
+
 	// Caption
-	Caption           *CaptionOptions
+	Caption *CaptionOptions
 }

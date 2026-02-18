@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/falcomza/docx-update"
+	docxupdater "github.com/falcomza/docx-update"
 )
 
 func main() {
@@ -119,8 +119,8 @@ func createDataLabelsChart() {
 			},
 		},
 		DataLabels: &docxupdater.DataLabelOptions{
-			ShowValue:   true,
-			Position:    docxupdater.DataLabelOutsideEnd,
+			ShowValue: true,
+			Position:  docxupdater.DataLabelOutsideEnd,
 		},
 		BarChartOptions: &docxupdater.BarChartOptions{
 			Direction: docxupdater.BarDirectionBar, // Horizontal bars
