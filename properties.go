@@ -248,15 +248,19 @@ func (u *Updater) GetCoreProperties() (*CoreProperties, error) {
 
 // updateCoreProperty updates or adds a core property in the XML
 func (u *Updater) updateCoreProperty(content, property, value string) string {
+	// Check if property exists
+	pattern := fmt.Sprintf(`<%s[^>]*>.*?</%s>`, regexp.QuoteMeta(property), regexp.QuoteMeta(property))
+	re := regexp.MustCompile(pattern)
+
 	if value == "" {
+		// If value is empty, remove the property if it exists
+		if re.MatchString(content) {
+			content = re.ReplaceAllString(content, "")
+		}
 		return content
 	}
 
 	escapedValue := escapeXML(value)
-
-	// Check if property exists
-	pattern := fmt.Sprintf(`<%s[^>]*>.*?</%s>`, regexp.QuoteMeta(property), regexp.QuoteMeta(property))
-	re := regexp.MustCompile(pattern)
 
 	if re.MatchString(content) {
 		// Update existing
@@ -302,15 +306,19 @@ func (u *Updater) updateCoreDateProperty(content, property, value string) string
 
 // updateAppProperty updates or adds an app property in the XML
 func (u *Updater) updateAppProperty(content, property, value string) string {
+	// Check if property exists
+	pattern := fmt.Sprintf(`<%s[^>]*>.*?</%s>`, regexp.QuoteMeta(property), regexp.QuoteMeta(property))
+	re := regexp.MustCompile(pattern)
+
 	if value == "" {
+		// If value is empty, remove the property if it exists
+		if re.MatchString(content) {
+			content = re.ReplaceAllString(content, "")
+		}
 		return content
 	}
 
 	escapedValue := escapeXML(value)
-
-	// Check if property exists
-	pattern := fmt.Sprintf(`<%s[^>]*>.*?</%s>`, regexp.QuoteMeta(property), regexp.QuoteMeta(property))
-	re := regexp.MustCompile(pattern)
 
 	if re.MatchString(content) {
 		// Update existing
@@ -340,12 +348,6 @@ func (u *Updater) generateDefaultCoreXML() string {
 	now := time.Now().Format(time.RFC3339)
 	return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-<dc:title></dc:title>
-<dc:subject></dc:subject>
-<dc:creator></dc:creator>
-<cp:keywords></cp:keywords>
-<dc:description></dc:description>
-<cp:lastModifiedBy></cp:lastModifiedBy>
 <cp:revision>1</cp:revision>
 <dcterms:created xsi:type="dcterms:W3CDTF">%s</dcterms:created>
 <dcterms:modified xsi:type="dcterms:W3CDTF">%s</dcterms:modified>
@@ -359,7 +361,6 @@ func (u *Updater) generateDefaultAppXML() string {
 <Application>Microsoft Word</Application>
 <DocSecurity>0</DocSecurity>
 <ScaleCrop>false</ScaleCrop>
-<Company></Company>
 <LinksUpToDate>false</LinksUpToDate>
 <SharedDoc>false</SharedDoc>
 <HyperlinksChanged>false</HyperlinksChanged>
