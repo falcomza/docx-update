@@ -12,7 +12,7 @@ A powerful Go library for programmatically manipulating Microsoft Word (DOCX) do
 - **Chart Insertion**: Create professional charts from scratch (bar, line, scatter, and more)
 - **Chart Copying**: Duplicate existing charts programmatically for bulk report generation
 - **Table Creation**: Insert formatted tables with custom styles, borders, and row heights
-- **Paragraph Insertion**: Add styled text with headings, bold, italic, and underline formatting
+- **Paragraph Insertion**: Add styled text with headings, alignment, list support, and robust anchor positioning
 - **Image Insertion**: Add images with automatic proportional sizing and flexible positioning
 - **Page & Section Breaks**: Control document flow with page and section breaks
 - **Auto-Captions**: Generate auto-numbered captions using Word's SEQ fields for tables and charts
@@ -190,11 +190,31 @@ u.InsertParagraph(updater.ParagraphOptions{
     Bold:      true,
     Italic:    true,
     Underline: true,
+    Alignment: updater.ParagraphAlignCenter,
     Position:  updater.PositionEnd,
+})
+
+// Add paragraph after anchor text (works across split Word runs)
+u.InsertParagraph(updater.ParagraphOptions{
+    Text:     "Follow-up details",
+    Position: updater.PositionAfterText,
+    Anchor:   "Executive Summary",
+})
+
+// Newlines and tabs are emitted as <w:br/> and <w:tab/>
+u.InsertParagraph(updater.ParagraphOptions{
+    Text:     "Line 1\nLine 2\tTabbed",
+    Position: updater.PositionEnd,
 })
 
 u.Save("with_paragraphs.docx")
 ```
+
+**Paragraph Notes:**
+- Supports alignment via `ParagraphAlignLeft`, `ParagraphAlignCenter`, `ParagraphAlignRight`, `ParagraphAlignJustify`
+- `PositionEnd` insertion is section-safe (`w:sectPr` remains the final element in `<w:body>`)
+- Anchor matching for `PositionAfterText` / `PositionBeforeText` is paragraph-aware and resilient to split runs
+- Anchor matching also tolerates normalized whitespace differences (spaces/newlines/tabs)
 
 ### Inserting Images
 
@@ -693,6 +713,10 @@ u.Save("with_properties.docx")
 ### Paragraph Operations
 - `InsertParagraph(options ParagraphOptions)` - Insert styled paragraph
 - `InsertParagraphs(paragraphs []ParagraphOptions)` - Insert multiple paragraphs
+- `AddHeading(level int, text string, position InsertPosition)` - Insert heading paragraph
+- `AddText(text string, position InsertPosition)` - Insert normal paragraph text
+- `AddBulletItem(text string, level int, position InsertPosition)` - Insert bullet list item
+- `AddNumberedItem(text string, level int, position InsertPosition)` - Insert numbered list item
 
 ### Image Operations
 - `InsertImage(options ImageOptions)` - Insert image with proportional sizing

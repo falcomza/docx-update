@@ -13,6 +13,9 @@ import (
 type Updater struct {
 	originalPath string
 	tempDir      string
+
+	bulletListNumID   int
+	numberedListNumID int
 }
 
 // New prepares a working copy of a DOCX for chart updates.

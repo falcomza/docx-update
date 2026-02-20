@@ -32,6 +32,16 @@ const (
 	ListTypeNumbered ListType = "numbered" // Numbered list (1, 2, 3...)
 )
 
+// ParagraphAlignment defines paragraph text alignment.
+type ParagraphAlignment string
+
+const (
+	ParagraphAlignLeft    ParagraphAlignment = "left"
+	ParagraphAlignCenter  ParagraphAlignment = "center"
+	ParagraphAlignRight   ParagraphAlignment = "right"
+	ParagraphAlignJustify ParagraphAlignment = "both"
+)
+
 // InsertPosition defines where to insert the paragraph
 type InsertPosition int
 
@@ -50,6 +60,7 @@ const (
 type ParagraphOptions struct {
 	Text      string         // The text content of the paragraph
 	Style     ParagraphStyle // The style to apply (default: Normal)
+	Alignment ParagraphAlignment
 	Position  InsertPosition // Where to insert the paragraph
 	Anchor    string         // Text to anchor the insertion (for PositionAfterText/PositionBeforeText)
 	Bold      bool           // Make text bold
@@ -59,6 +70,11 @@ type ParagraphOptions struct {
 	// List properties (alternative to Style-based lists)
 	ListType  ListType // Type of list (bullet or numbered)
 	ListLevel int      // Indentation level (0-8, default 0)
+}
+
+type listNumberingIDs struct {
+	bulletNumID   int
+	numberedNumID int
 }
 
 // InsertParagraph inserts a new paragraph into the document
@@ -75,11 +91,14 @@ func (u *Updater) InsertParagraph(opts ParagraphOptions) error {
 		opts.Style = StyleNormal
 	}
 
+	listIDs := listNumberingIDs{bulletNumID: BulletListNumID, numberedNumID: NumberedListNumID}
+
 	// Ensure numbering.xml exists if using lists
 	if opts.ListType != "" {
 		if err := u.ensureNumberingXML(); err != nil {
 			return fmt.Errorf("ensure numbering: %w", err)
 		}
+		listIDs = u.getListNumberingIDs()
 	}
 
 	// Read document.xml
@@ -90,7 +109,7 @@ func (u *Updater) InsertParagraph(opts ParagraphOptions) error {
 	}
 
 	// Generate paragraph XML
-	paraXML := generateParagraphXML(opts)
+	paraXML := generateParagraphXML(opts, listIDs)
 
 	// Insert paragraph at the specified position
 	updated, err := insertParagraphAtPosition(raw, paraXML, opts)
@@ -117,7 +136,7 @@ func (u *Updater) InsertParagraphs(paragraphs []ParagraphOptions) error {
 }
 
 // generateParagraphXML creates the XML for a paragraph with the specified options
-func generateParagraphXML(opts ParagraphOptions) []byte {
+func generateParagraphXML(opts ParagraphOptions, listIDs listNumberingIDs) []byte {
 	var buf bytes.Buffer
 
 	buf.WriteString("<w:p>")
@@ -127,16 +146,20 @@ func generateParagraphXML(opts ParagraphOptions) []byte {
 
 	// Add style if specified
 	if opts.Style != StyleNormal {
-		buf.WriteString(fmt.Sprintf(`<w:pStyle w:val="%s"/>`, opts.Style))
+		buf.WriteString(fmt.Sprintf(`<w:pStyle w:val="%s"/>`, xmlEscape(string(opts.Style))))
+	}
+
+	if alignment, ok := paragraphAlignmentValue(opts.Alignment); ok {
+		buf.WriteString(fmt.Sprintf(`<w:jc w:val="%s"/>`, alignment))
 	}
 
 	// Add numbering properties if ListType is specified
 	if opts.ListType != "" {
 		var numID int
 		if opts.ListType == ListTypeBullet {
-			numID = BulletListNumID
+			numID = listIDs.bulletNumID
 		} else if opts.ListType == ListTypeNumbered {
-			numID = NumberedListNumID
+			numID = listIDs.numberedNumID
 		}
 
 		if numID > 0 {
@@ -171,20 +194,57 @@ func generateParagraphXML(opts ParagraphOptions) []byte {
 		buf.WriteString("</w:rPr>")
 	}
 
-	// Add text content
-	buf.WriteString("<w:t")
-	// Preserve spaces if text has leading/trailing whitespace
-	if strings.HasPrefix(opts.Text, " ") || strings.HasSuffix(opts.Text, " ") {
-		buf.WriteString(` xml:space="preserve"`)
-	}
-	buf.WriteString(">")
-	buf.WriteString(xmlEscape(opts.Text))
-	buf.WriteString("</w:t>")
+	writeRunTextWithControls(&buf, opts.Text)
 
 	buf.WriteString("</w:r>")
 	buf.WriteString("</w:p>")
 
 	return buf.Bytes()
+}
+
+func writeRunTextWithControls(buf *bytes.Buffer, text string) {
+	start := 0
+	flushText := func(seg string) {
+		if seg == "" {
+			return
+		}
+		buf.WriteString("<w:t")
+		if strings.HasPrefix(seg, " ") || strings.HasSuffix(seg, " ") {
+			buf.WriteString(` xml:space="preserve"`)
+		}
+		buf.WriteString(">")
+		buf.WriteString(xmlEscape(seg))
+		buf.WriteString("</w:t>")
+	}
+
+	for i := 0; i < len(text); i++ {
+		switch text[i] {
+		case '\n':
+			flushText(text[start:i])
+			buf.WriteString("<w:br/>")
+			start = i + 1
+		case '\t':
+			flushText(text[start:i])
+			buf.WriteString("<w:tab/>")
+			start = i + 1
+		}
+	}
+	flushText(text[start:])
+}
+
+func paragraphAlignmentValue(alignment ParagraphAlignment) (string, bool) {
+	switch strings.ToLower(string(alignment)) {
+	case "left":
+		return "left", true
+	case "center":
+		return "center", true
+	case "right":
+		return "right", true
+	case "both", "justify":
+		return "both", true
+	default:
+		return "", false
+	}
 }
 
 // insertParagraphAtPosition inserts the paragraph XML at the specified position
@@ -211,13 +271,12 @@ func insertParagraphAtPosition(docXML, paraXML []byte, opts ParagraphOptions) ([
 
 // insertAtBodyStart inserts paragraph at the start of document body
 func insertAtBodyStart(docXML, paraXML []byte) ([]byte, error) {
-	// Find <w:body> opening tag
-	bodyStart := bytes.Index(docXML, []byte("<w:body>"))
-	if bodyStart == -1 {
-		return nil, fmt.Errorf("could not find <w:body> tag")
+	bodyContentStart, err := findBodyContentStart(docXML)
+	if err != nil {
+		return nil, err
 	}
 
-	insertPos := bodyStart + len("<w:body>")
+	insertPos := bodyContentStart
 
 	result := make([]byte, len(docXML)+len(paraXML))
 	n := copy(result, docXML[:insertPos])
@@ -229,41 +288,46 @@ func insertAtBodyStart(docXML, paraXML []byte) ([]byte, error) {
 
 // insertAtBodyEnd inserts paragraph at the end of document body (before </w:body>)
 func insertAtBodyEnd(docXML, paraXML []byte) ([]byte, error) {
-	// Find </w:body> closing tag
 	bodyEnd := bytes.Index(docXML, []byte("</w:body>"))
 	if bodyEnd == -1 {
 		return nil, fmt.Errorf("could not find </w:body> tag")
 	}
 
+	insertPos := bodyEnd
+	if sectPrPos := bytes.LastIndex(docXML[:bodyEnd], []byte("<w:sectPr")); sectPrPos != -1 {
+		insertPos = sectPrPos
+	}
+
 	result := make([]byte, len(docXML)+len(paraXML))
-	n := copy(result, docXML[:bodyEnd])
+	n := copy(result, docXML[:insertPos])
 	n += copy(result[n:], paraXML)
-	copy(result[n:], docXML[bodyEnd:])
+	copy(result[n:], docXML[insertPos:])
 
 	return result, nil
 }
 
+func findBodyContentStart(docXML []byte) (int, error) {
+	bodyStart := bytes.Index(docXML, []byte("<w:body"))
+	if bodyStart == -1 {
+		return 0, fmt.Errorf("could not find <w:body> tag")
+	}
+
+	openTagEnd := bytes.IndexByte(docXML[bodyStart:], '>')
+	if openTagEnd == -1 {
+		return 0, fmt.Errorf("malformed <w:body> tag")
+	}
+
+	return bodyStart + openTagEnd + 1, nil
+}
+
 // insertAfterText inserts paragraph after the paragraph containing the anchor text
 func insertAfterText(docXML, paraXML []byte, anchorText string) ([]byte, error) {
-	// Find the anchor text in document
-	anchorBytes := []byte(xmlEscape(anchorText))
-	anchorPos := bytes.Index(docXML, anchorBytes)
-	if anchorPos == -1 {
-		// Try unescaped
-		anchorPos = bytes.Index(docXML, []byte(anchorText))
-		if anchorPos == -1 {
-			return nil, fmt.Errorf("anchor text %q not found in document", anchorText)
-		}
+	_, paraEnd, err := findParagraphRangeByAnchor(docXML, anchorText)
+	if err != nil {
+		return nil, err
 	}
 
-	// Find the end of the paragraph containing this text
-	// Search forward for </w:p>
-	paraEnd := bytes.Index(docXML[anchorPos:], []byte("</w:p>"))
-	if paraEnd == -1 {
-		return nil, fmt.Errorf("could not find paragraph end after anchor text")
-	}
-
-	insertPos := anchorPos + paraEnd + len("</w:p>")
+	insertPos := paraEnd
 
 	result := make([]byte, len(docXML)+len(paraXML))
 	n := copy(result, docXML[:insertPos])
@@ -275,27 +339,9 @@ func insertAfterText(docXML, paraXML []byte, anchorText string) ([]byte, error) 
 
 // insertBeforeText inserts paragraph before the paragraph containing the anchor text
 func insertBeforeText(docXML, paraXML []byte, anchorText string) ([]byte, error) {
-	// Find the anchor text in document
-	anchorBytes := []byte(xmlEscape(anchorText))
-	anchorPos := bytes.Index(docXML, anchorBytes)
-	if anchorPos == -1 {
-		// Try unescaped
-		anchorPos = bytes.Index(docXML, []byte(anchorText))
-		if anchorPos == -1 {
-			return nil, fmt.Errorf("anchor text %q not found in document", anchorText)
-		}
-	}
-
-	// Find the start of the paragraph containing this text
-	// Search backward for <w:p>
-	searchStart := docXML[:anchorPos]
-	paraStart := bytes.LastIndex(searchStart, []byte("<w:p>"))
-	if paraStart == -1 {
-		// Try with attributes
-		paraStart = bytes.LastIndex(searchStart, []byte("<w:p "))
-		if paraStart == -1 {
-			return nil, fmt.Errorf("could not find paragraph start before anchor text")
-		}
+	paraStart, _, err := findParagraphRangeByAnchor(docXML, anchorText)
+	if err != nil {
+		return nil, err
 	}
 
 	// Insert before this paragraph
@@ -305,6 +351,162 @@ func insertBeforeText(docXML, paraXML []byte, anchorText string) ([]byte, error)
 	copy(result[n:], docXML[paraStart:])
 
 	return result, nil
+}
+
+func findParagraphRangeByAnchor(docXML []byte, anchorText string) (int, int, error) {
+	if anchorText == "" {
+		return 0, 0, fmt.Errorf("anchor text cannot be empty")
+	}
+
+	normalizedAnchor := normalizeWhitespace(anchorText)
+
+	searchPos := 0
+	for {
+		paraStart := findNextParagraphStart(docXML, searchPos)
+		if paraStart == -1 {
+			break
+		}
+
+		paraEndRel := bytes.Index(docXML[paraStart:], []byte("</w:p>"))
+		if paraEndRel == -1 {
+			return 0, 0, fmt.Errorf("could not find paragraph end for anchor search")
+		}
+		paraEnd := paraStart + paraEndRel + len("</w:p>")
+
+		paragraphXML := docXML[paraStart:paraEnd]
+		paragraphText := extractParagraphPlainText(paragraphXML)
+		if strings.Contains(paragraphText, anchorText) {
+			return paraStart, paraEnd, nil
+		}
+
+		if normalizedAnchor != "" && strings.Contains(normalizeWhitespace(paragraphText), normalizedAnchor) {
+			return paraStart, paraEnd, nil
+		}
+
+		searchPos = paraEnd
+	}
+
+	return 0, 0, fmt.Errorf("anchor text %q not found in document", anchorText)
+}
+
+func findNextParagraphStart(docXML []byte, start int) int {
+	for {
+		idx := bytes.Index(docXML[start:], []byte("<w:p"))
+		if idx == -1 {
+			return -1
+		}
+		idx += start
+
+		next := idx + len("<w:p")
+		if next < len(docXML) {
+			ch := docXML[next]
+			if ch == '>' || ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' {
+				return idx
+			}
+		}
+
+		start = idx + len("<w:p")
+	}
+}
+
+func extractParagraphPlainText(paragraphXML []byte) string {
+	var out strings.Builder
+	searchPos := 0
+
+	for {
+		tStart := findNextWordTagStart(paragraphXML, searchPos, "t")
+		tabStart := findNextWordTagStart(paragraphXML, searchPos, "tab")
+		brStart := findNextWordTagStart(paragraphXML, searchPos, "br")
+
+		next, kind := nextXMLTokenAbsolute(tStart, tabStart, brStart)
+		if next == -1 {
+			break
+		}
+
+		tStart = next
+		if kind == "tab" || kind == "br" {
+			out.WriteByte(' ')
+			tokenEndRel := bytes.IndexByte(paragraphXML[tStart:], '>')
+			if tokenEndRel == -1 {
+				break
+			}
+			searchPos = tStart + tokenEndRel + 1
+			continue
+		}
+
+		tOpenEndRel := bytes.IndexByte(paragraphXML[tStart:], '>')
+		if tOpenEndRel == -1 {
+			break
+		}
+		textStart := tStart + tOpenEndRel + 1
+
+		tCloseRel := bytes.Index(paragraphXML[textStart:], []byte("</w:t>"))
+		if tCloseRel == -1 {
+			break
+		}
+		textEnd := textStart + tCloseRel
+
+		out.WriteString(xmlUnescape(string(paragraphXML[textStart:textEnd])))
+		searchPos = textEnd + len("</w:t>")
+	}
+
+	return out.String()
+}
+
+func nextXMLTokenAbsolute(tPos, tabPos, brPos int) (int, string) {
+	next := -1
+	kind := ""
+	set := func(pos int, tokenKind string) {
+		if pos == -1 {
+			return
+		}
+		if next == -1 || pos < next {
+			next = pos
+			kind = tokenKind
+		}
+	}
+
+	set(tPos, "text")
+	set(tabPos, "tab")
+	set(brPos, "br")
+
+	return next, kind
+}
+
+func findNextWordTagStart(docXML []byte, start int, tag string) int {
+	needle := []byte("<w:" + tag)
+	for {
+		idx := bytes.Index(docXML[start:], needle)
+		if idx == -1 {
+			return -1
+		}
+		idx += start
+
+		next := idx + len(needle)
+		if next < len(docXML) {
+			ch := docXML[next]
+			if ch == '>' || ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' || ch == '/' {
+				return idx
+			}
+		}
+
+		start = idx + len(needle)
+	}
+}
+
+func normalizeWhitespace(s string) string {
+	return strings.Join(strings.Fields(s), " ")
+}
+
+func xmlUnescape(s string) string {
+	replacer := strings.NewReplacer(
+		"&lt;", "<",
+		"&gt;", ">",
+		"&quot;", `"`,
+		"&apos;", "'",
+		"&amp;", "&",
+	)
+	return replacer.Replace(s)
 }
 
 // AddHeading is a convenience function to add a heading paragraph

@@ -450,6 +450,49 @@ func TestListLevelBounds(t *testing.T) {
 	}
 }
 
+func TestEnsureNumberingXMLPreservesExistingDefinitions(t *testing.T) {
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.docx")
+	outputPath := filepath.Join(tempDir, "output.docx")
+
+	if err := os.WriteFile(inputPath, buildFixtureDocxWithExistingNumbering(t), 0o644); err != nil {
+		t.Fatalf("write input fixture: %v", err)
+	}
+
+	u, err := New(inputPath)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+	defer u.Cleanup()
+
+	if err := u.AddBulletItem("Uses managed list", 0, PositionEnd); err != nil {
+		t.Fatalf("AddBulletItem failed: %v", err)
+	}
+
+	if err := u.Save(outputPath); err != nil {
+		t.Fatalf("Save failed: %v", err)
+	}
+
+	numberingXML := readZipEntry(t, outputPath, "word/numbering.xml")
+	if !strings.Contains(numberingXML, `w:abstractNumId="7"`) || !strings.Contains(numberingXML, `w:numId="1"`) {
+		t.Error("existing numbering definitions were not preserved")
+	}
+	if !strings.Contains(numberingXML, "DOCXUPDATE_BULLET_NUMID:") {
+		t.Error("managed bullet numbering marker not found")
+	}
+	if !strings.Contains(numberingXML, "DOCXUPDATE_NUMBERED_NUMID:") {
+		t.Error("managed numbered numbering marker not found")
+	}
+
+	docXML := readZipEntry(t, outputPath, "word/document.xml")
+	if !strings.Contains(docXML, "Uses managed list") {
+		t.Error("inserted list text not found")
+	}
+	if strings.Contains(docXML, `<w:numId w:val="1"/>`) {
+		t.Error("managed list reused existing numId=1; expected non-conflicting numId")
+	}
+}
+
 // Helper functions for tests
 func buildFixtureDocx(t *testing.T) []byte {
 	t.Helper()
@@ -460,6 +503,24 @@ func buildFixtureDocx(t *testing.T) []byte {
 	addZipEntry(t, docxZip, "[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"></Types>`)
 	addZipEntry(t, docxZip, "word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body></w:body></w:document>`)
 	addZipEntry(t, docxZip, "word/_rels/document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"></Relationships>`)
+
+	if err := docxZip.Close(); err != nil {
+		t.Fatalf("close docx zip: %v", err)
+	}
+
+	return docx.Bytes()
+}
+
+func buildFixtureDocxWithExistingNumbering(t *testing.T) []byte {
+	t.Helper()
+
+	docx := &bytes.Buffer{}
+	docxZip := zip.NewWriter(docx)
+
+	addZipEntry(t, docxZip, "[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>`)
+	addZipEntry(t, docxZip, "word/document.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body></w:body></w:document>`)
+	addZipEntry(t, docxZip, "word/_rels/document.xml.rels", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/></Relationships>`)
+	addZipEntry(t, docxZip, "word/numbering.xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:abstractNum w:abstractNumId="7"><w:multiLevelType w:val="singleLevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="7"/></w:num></w:numbering>`)
 
 	if err := docxZip.Close(); err != nil {
 		t.Fatalf("close docx zip: %v", err)

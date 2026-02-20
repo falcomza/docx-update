@@ -1,9 +1,12 @@
 package docxupdater
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -13,29 +16,42 @@ const (
 	NumberedListNumID = 2 // Numbering ID for numbered lists
 )
 
+var (
+	docxUpdateBulletNumIDPattern   = regexp.MustCompile(`DOCXUPDATE_BULLET_NUMID:(\d+)`)
+	docxUpdateNumberedNumIDPattern = regexp.MustCompile(`DOCXUPDATE_NUMBERED_NUMID:(\d+)`)
+	numIDPattern                   = regexp.MustCompile(`w:numId="(\d+)"`)
+	abstractNumIDPattern           = regexp.MustCompile(`w:abstractNumId="(\d+)"`)
+)
+
 // ensureNumberingXML ensures numbering.xml exists with bullet and numbered list support
 func (u *Updater) ensureNumberingXML() error {
 	numberingPath := filepath.Join(u.tempDir, "word", "numbering.xml")
 
-	// Check if numbering.xml already exists
-	if _, err := os.Stat(numberingPath); err == nil {
-		// File exists, check if it has our list definitions
-		data, err := os.ReadFile(numberingPath)
-		if err != nil {
-			return fmt.Errorf("read numbering.xml: %w", err)
-		}
+	if data, err := os.ReadFile(numberingPath); err == nil {
+		content := string(data)
 
-		// If it already has our numbering definitions, we're done
-		if strings.Contains(string(data), fmt.Sprintf(`w:numId="%d"`, BulletListNumID)) &&
-			strings.Contains(string(data), fmt.Sprintf(`w:numId="%d"`, NumberedListNumID)) {
-			return nil
+		if bulletID, numberedID, ok := extractDocxUpdateNumberingIDs(content); ok {
+			u.setListNumberingIDs(bulletID, numberedID)
+		} else if hasLegacyManagedNumbering(content) {
+			u.setListNumberingIDs(BulletListNumID, NumberedListNumID)
+		} else {
+			updated, bulletID, numberedID, appendErr := appendDocxUpdateNumberingDefinitions(content)
+			if appendErr != nil {
+				return fmt.Errorf("append numbering definitions: %w", appendErr)
+			}
+			if err := os.WriteFile(numberingPath, []byte(updated), 0o644); err != nil {
+				return fmt.Errorf("write numbering.xml: %w", err)
+			}
+			u.setListNumberingIDs(bulletID, numberedID)
 		}
-	}
-
-	// Create new numbering.xml with bullet and numbered list definitions
-	numberingXML := generateNumberingXML()
-	if err := os.WriteFile(numberingPath, []byte(numberingXML), 0o644); err != nil {
-		return fmt.Errorf("write numbering.xml: %w", err)
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("read numbering.xml: %w", err)
+	} else {
+		numberingXML := generateNumberingXML()
+		if err := os.WriteFile(numberingPath, []byte(numberingXML), 0o644); err != nil {
+			return fmt.Errorf("write numbering.xml: %w", err)
+		}
+		u.setListNumberingIDs(BulletListNumID, NumberedListNumID)
 	}
 
 	// Update content types if needed
@@ -53,233 +69,165 @@ func (u *Updater) ensureNumberingXML() error {
 
 // generateNumberingXML creates a complete numbering.xml with bullet and numbered list definitions
 func generateNumberingXML() string {
-	return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" 
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"
-             mc:Ignorable="w14">
-  
-  <!-- Abstract Numbering Definition for Bullets -->
-  <w:abstractNum w:abstractNumId="0">
-    <w:multiLevelType w:val="hybridMultilevel"/>
-    
-    <!-- Level 0 -->
-    <w:lvl w:ilvl="0">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="●"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="720" w:hanging="360"/>
-      </w:pPr>
-      <w:rPr>
-        <w:rFonts w:ascii="Symbol" w:hAnsi="Symbol" w:hint="default"/>
-      </w:rPr>
-    </w:lvl>
-    
-    <!-- Level 1 -->
-    <w:lvl w:ilvl="1">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="○"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="1440" w:hanging="360"/>
-      </w:pPr>
-      <w:rPr>
-        <w:rFonts w:ascii="Courier New" w:hAnsi="Courier New" w:hint="default"/>
-      </w:rPr>
-    </w:lvl>
-    
-    <!-- Level 2 -->
-    <w:lvl w:ilvl="2">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="■"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="2160" w:hanging="360"/>
-      </w:pPr>
-      <w:rPr>
-        <w:rFonts w:ascii="Wingdings" w:hAnsi="Wingdings" w:hint="default"/>
-      </w:rPr>
-    </w:lvl>
-    
-    <!-- Level 3-8 (additional levels with increasing indentation) -->
-    <w:lvl w:ilvl="3">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="●"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="2880" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <w:lvl w:ilvl="4">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="○"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="3600" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <w:lvl w:ilvl="5">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="■"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="4320" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <w:lvl w:ilvl="6">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="●"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="5040" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <w:lvl w:ilvl="7">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="○"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="5760" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <w:lvl w:ilvl="8">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="bullet"/>
-      <w:lvlText w:val="■"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="6480" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-  </w:abstractNum>
-  
-  <!-- Abstract Numbering Definition for Numbered Lists -->
-  <w:abstractNum w:abstractNumId="1">
-    <w:multiLevelType w:val="hybridMultilevel"/>
-    
-    <!-- Level 0: 1, 2, 3... -->
-    <w:lvl w:ilvl="0">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="decimal"/>
-      <w:lvlText w:val="%1."/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="720" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <!-- Level 1: a, b, c... -->
-    <w:lvl w:ilvl="1">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="lowerLetter"/>
-      <w:lvlText w:val="%2."/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="1440" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <!-- Level 2: i, ii, iii... -->
-    <w:lvl w:ilvl="2">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="lowerRoman"/>
-      <w:lvlText w:val="%3."/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="2160" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <!-- Level 3: 1), 2), 3)... -->
-    <w:lvl w:ilvl="3">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="decimal"/>
-      <w:lvlText w:val="%4)"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="2880" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <!-- Level 4: (a), (b), (c)... -->
-    <w:lvl w:ilvl="4">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="lowerLetter"/>
-      <w:lvlText w:val="(%5)"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="3600" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <!-- Level 5: (i), (ii), (iii)... -->
-    <w:lvl w:ilvl="5">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="lowerRoman"/>
-      <w:lvlText w:val="(%6)"/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="4320" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <!-- Level 6-8: Same as level 0-2 with more indentation -->
-    <w:lvl w:ilvl="6">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="decimal"/>
-      <w:lvlText w:val="%7."/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="5040" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <w:lvl w:ilvl="7">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="lowerLetter"/>
-      <w:lvlText w:val="%8."/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="5760" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-    
-    <w:lvl w:ilvl="8">
-      <w:start w:val="1"/>
-      <w:numFmt w:val="lowerRoman"/>
-      <w:lvlText w:val="%9."/>
-      <w:lvlJc w:val="left"/>
-      <w:pPr>
-        <w:ind w:left="6480" w:hanging="360"/>
-      </w:pPr>
-    </w:lvl>
-  </w:abstractNum>
-  
-  <!-- Concrete Numbering Instance for Bullets -->
-  <w:num w:numId="1">
-    <w:abstractNumId w:val="0"/>
-  </w:num>
-  
-  <!-- Concrete Numbering Instance for Numbered Lists -->
-  <w:num w:numId="2">
-    <w:abstractNumId w:val="1"/>
-  </w:num>
-  
-</w:numbering>`
+	var buf bytes.Buffer
+
+	buf.WriteString(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` + "\n")
+	buf.WriteString(`<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" ` + "\n")
+	buf.WriteString(`             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" ` + "\n")
+	buf.WriteString(`             xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml"` + "\n")
+	buf.WriteString(`             mc:Ignorable="w14">` + "\n")
+	buf.WriteString(generateDocxUpdateNumberingDefinitions(0, 1, BulletListNumID, NumberedListNumID))
+	buf.WriteString("\n</w:numbering>")
+
+	return buf.String()
+}
+
+func generateDocxUpdateNumberingDefinitions(bulletAbstractID, numberedAbstractID, bulletNumID, numberedNumID int) string {
+	var buf bytes.Buffer
+
+	bulletSymbols := []string{"●", "○", "■", "●", "○", "■", "●", "○", "■"}
+	bulletFonts := []string{"Symbol", "Courier New", "Wingdings", "", "", "", "", "", ""}
+
+	buf.WriteString("\n  <!-- Abstract Numbering Definition for Bullets -->\n")
+	buf.WriteString(fmt.Sprintf("  <w:abstractNum w:abstractNumId=\"%d\">\n", bulletAbstractID))
+	buf.WriteString("    <w:multiLevelType w:val=\"hybridMultilevel\"/>\n")
+	for level := 0; level <= 8; level++ {
+		left := 720 * (level + 1)
+		buf.WriteString(fmt.Sprintf("    <w:lvl w:ilvl=\"%d\">\n", level))
+		buf.WriteString("      <w:start w:val=\"1\"/>\n")
+		buf.WriteString("      <w:numFmt w:val=\"bullet\"/>\n")
+		buf.WriteString(fmt.Sprintf("      <w:lvlText w:val=\"%s\"/>\n", bulletSymbols[level]))
+		buf.WriteString("      <w:lvlJc w:val=\"left\"/>\n")
+		buf.WriteString("      <w:pPr>\n")
+		buf.WriteString(fmt.Sprintf("        <w:ind w:left=\"%d\" w:hanging=\"360\"/>\n", left))
+		buf.WriteString("      </w:pPr>\n")
+		if font := bulletFonts[level]; font != "" {
+			buf.WriteString("      <w:rPr>\n")
+			buf.WriteString(fmt.Sprintf("        <w:rFonts w:ascii=\"%s\" w:hAnsi=\"%s\" w:hint=\"default\"/>\n", font, font))
+			buf.WriteString("      </w:rPr>\n")
+		}
+		buf.WriteString("    </w:lvl>\n")
+	}
+	buf.WriteString("  </w:abstractNum>\n")
+
+	numberedFormats := []string{"decimal", "lowerLetter", "lowerRoman", "decimal", "lowerLetter", "lowerRoman", "decimal", "lowerLetter", "lowerRoman"}
+	numberedTexts := []string{"%1.", "%2.", "%3.", "%4)", "(%5)", "(%6)", "%7.", "%8.", "%9."}
+
+	buf.WriteString("\n  <!-- Abstract Numbering Definition for Numbered Lists -->\n")
+	buf.WriteString(fmt.Sprintf("  <w:abstractNum w:abstractNumId=\"%d\">\n", numberedAbstractID))
+	buf.WriteString("    <w:multiLevelType w:val=\"hybridMultilevel\"/>\n")
+	for level := 0; level <= 8; level++ {
+		left := 720 * (level + 1)
+		buf.WriteString(fmt.Sprintf("    <w:lvl w:ilvl=\"%d\">\n", level))
+		buf.WriteString("      <w:start w:val=\"1\"/>\n")
+		buf.WriteString(fmt.Sprintf("      <w:numFmt w:val=\"%s\"/>\n", numberedFormats[level]))
+		buf.WriteString(fmt.Sprintf("      <w:lvlText w:val=\"%s\"/>\n", numberedTexts[level]))
+		buf.WriteString("      <w:lvlJc w:val=\"left\"/>\n")
+		buf.WriteString("      <w:pPr>\n")
+		buf.WriteString(fmt.Sprintf("        <w:ind w:left=\"%d\" w:hanging=\"360\"/>\n", left))
+		buf.WriteString("      </w:pPr>\n")
+		buf.WriteString("    </w:lvl>\n")
+	}
+	buf.WriteString("  </w:abstractNum>\n")
+
+	buf.WriteString("\n")
+	buf.WriteString(fmt.Sprintf("  <!-- DOCXUPDATE_BULLET_NUMID:%d -->\n", bulletNumID))
+	buf.WriteString(fmt.Sprintf("  <w:num w:numId=\"%d\">\n", bulletNumID))
+	buf.WriteString(fmt.Sprintf("    <w:abstractNumId w:val=\"%d\"/>\n", bulletAbstractID))
+	buf.WriteString("  </w:num>\n")
+
+	buf.WriteString(fmt.Sprintf("  <!-- DOCXUPDATE_NUMBERED_NUMID:%d -->\n", numberedNumID))
+	buf.WriteString(fmt.Sprintf("  <w:num w:numId=\"%d\">\n", numberedNumID))
+	buf.WriteString(fmt.Sprintf("    <w:abstractNumId w:val=\"%d\"/>\n", numberedAbstractID))
+	buf.WriteString("  </w:num>\n")
+
+	return buf.String()
+}
+
+func extractDocxUpdateNumberingIDs(content string) (int, int, bool) {
+	bulletMatch := docxUpdateBulletNumIDPattern.FindStringSubmatch(content)
+	numberedMatch := docxUpdateNumberedNumIDPattern.FindStringSubmatch(content)
+	if len(bulletMatch) < 2 || len(numberedMatch) < 2 {
+		return 0, 0, false
+	}
+
+	bulletID, err := strconv.Atoi(bulletMatch[1])
+	if err != nil {
+		return 0, 0, false
+	}
+	numberedID, err := strconv.Atoi(numberedMatch[1])
+	if err != nil {
+		return 0, 0, false
+	}
+	if bulletID <= 0 || numberedID <= 0 {
+		return 0, 0, false
+	}
+
+	return bulletID, numberedID, true
+}
+
+func hasLegacyManagedNumbering(content string) bool {
+	return strings.Contains(content, `<w:num w:numId="1">`) &&
+		strings.Contains(content, `<w:num w:numId="2">`) &&
+		strings.Contains(content, `<w:abstractNumId w:val="0"/>`) &&
+		strings.Contains(content, `<w:abstractNumId w:val="1"/>`) &&
+		strings.Contains(content, `w:numFmt w:val="bullet"`) &&
+		strings.Contains(content, `w:numFmt w:val="decimal"`)
+}
+
+func appendDocxUpdateNumberingDefinitions(content string) (string, int, int, error) {
+	closingTag := "</w:numbering>"
+	insertPos := strings.LastIndex(content, closingTag)
+	if insertPos == -1 {
+		return "", 0, 0, fmt.Errorf("invalid numbering.xml: missing </w:numbering>")
+	}
+
+	maxNumID := findMaxXMLAttributeInt(content, numIDPattern)
+	maxAbstractNumID := findMaxXMLAttributeInt(content, abstractNumIDPattern)
+
+	bulletAbstractID := maxAbstractNumID + 1
+	numberedAbstractID := maxAbstractNumID + 2
+	bulletNumID := maxNumID + 1
+	numberedNumID := maxNumID + 2
+
+	definitions := generateDocxUpdateNumberingDefinitions(bulletAbstractID, numberedAbstractID, bulletNumID, numberedNumID)
+	updated := content[:insertPos] + definitions + "\n" + content[insertPos:]
+
+	return updated, bulletNumID, numberedNumID, nil
+}
+
+func findMaxXMLAttributeInt(content string, pattern *regexp.Regexp) int {
+	maxValue := 0
+	matches := pattern.FindAllStringSubmatch(content, -1)
+	for _, match := range matches {
+		if len(match) < 2 {
+			continue
+		}
+		value, err := strconv.Atoi(match[1])
+		if err != nil {
+			continue
+		}
+		if value > maxValue {
+			maxValue = value
+		}
+	}
+	return maxValue
+}
+
+func (u *Updater) setListNumberingIDs(bulletID, numberedID int) {
+	u.bulletListNumID = bulletID
+	u.numberedListNumID = numberedID
+}
+
+func (u *Updater) getListNumberingIDs() listNumberingIDs {
+	ids := listNumberingIDs{bulletNumID: u.bulletListNumID, numberedNumID: u.numberedListNumID}
+	if ids.bulletNumID <= 0 {
+		ids.bulletNumID = BulletListNumID
+	}
+	if ids.numberedNumID <= 0 {
+		ids.numberedNumID = NumberedListNumID
+	}
+	return ids
 }
 
 // ensureNumberingContentType adds numbering.xml to [Content_Types].xml if not present
