@@ -62,9 +62,9 @@ const (
 type TableWidthType string
 
 const (
-	TableWidthAuto       TableWidthType = "auto"     // Auto-fit to content
-	TableWidthPercentage TableWidthType = "pct"      // Percentage of available width (5000 = 100%)
-	TableWidthFixed      TableWidthType = "dxa"      // Fixed width in twips
+	TableWidthAuto       TableWidthType = "auto" // Auto-fit to content
+	TableWidthPercentage TableWidthType = "pct"  // Percentage of available width (5000 = 100%)
+	TableWidthFixed      TableWidthType = "dxa"  // Fixed width in twips
 )
 
 // RowHeightRule defines how row height is interpreted
@@ -90,12 +90,12 @@ type TableOptions struct {
 	Rows [][]string // Each inner slice is a row of cell data
 
 	// Header styling
-	HeaderStyle       CellStyle     // Style for header row
-	HeaderStyleName   string        // Named Word style for header paragraphs (e.g., "Heading 1")
-	RepeatHeader      bool          // Repeat header row on each page
-	HeaderBackground  string        // Hex color for header background (e.g., "4472C4")
-	HeaderBold        bool          // Make header text bold
-	HeaderAlignment   CellAlignment // Header text alignment
+	HeaderStyle      CellStyle     // Style for header row
+	HeaderStyleName  string        // Named Word style for header paragraphs (e.g., "Heading 1")
+	RepeatHeader     bool          // Repeat header row on each page
+	HeaderBackground string        // Hex color for header background (e.g., "4472C4")
+	HeaderBold       bool          // Make header text bold
+	HeaderAlignment  CellAlignment // Header text alignment
 
 	// Row styling
 	RowStyle          CellStyle         // Style for data rows
@@ -105,7 +105,7 @@ type TableOptions struct {
 	VerticalAlign     VerticalAlignment // Vertical alignment in cells
 
 	// Row height
-	HeaderRowHeight int           // Header row height in twips, 0 for auto
+	HeaderRowHeight  int           // Header row height in twips, 0 for auto
 	HeaderHeightRule RowHeightRule // Header height rule (auto, atLeast, exact)
 	RowHeight        int           // Data row height in twips, 0 for auto
 	RowHeightRule    RowHeightRule // Data row height rule (auto, atLeast, exact)
@@ -120,13 +120,19 @@ type TableOptions struct {
 	BorderStyle BorderStyle // Border style
 
 	// Caption options (nil for no caption)
-	Caption *CaptionOptions
-	BorderSize  int         // Border width in eighths of a point (default: 4 = 0.5pt)
-	BorderColor string      // Hex color for borders (default: "000000")
+	Caption     *CaptionOptions
+	BorderSize  int    // Border width in eighths of a point (default: 4 = 0.5pt)
+	BorderColor string // Hex color for borders (default: "000000")
 
 	// Cell properties
 	CellPadding int  // Cell padding in twips (default: 108 = 0.075")
 	AutoFit     bool // Auto-fit content (default: false for fixed widths)
+
+	// Conditional cell styling based on content
+	// Map keys are matched case-insensitively against cell text
+	// Matching cells will have their style overridden by the map value
+	// Non-empty conditional values take precedence over row-level styling
+	ConditionalStyles map[string]CellStyle
 }
 
 // ColumnDefinition defines properties for a table column
@@ -409,6 +415,39 @@ func generateHeaderRow(opts TableOptions) string {
 	return buf.String()
 }
 
+// resolveCellStyle determines the final cell style by merging row-level and conditional styles
+func resolveCellStyle(cellContent string, rowStyle CellStyle, background string, conditionalStyles map[string]CellStyle) (CellStyle, string) {
+	mergedStyle := rowStyle
+	finalBackground := background
+
+	// Check for conditional style match (case-insensitive)
+	if conditionalStyles != nil {
+		// Normalize cell content for comparison
+		normalizedContent := strings.TrimSpace(cellContent)
+
+		for key, condStyle := range conditionalStyles {
+			if strings.EqualFold(normalizedContent, strings.TrimSpace(key)) {
+				// Merge conditional style - conditional values override row defaults
+				if condStyle.Background != "" {
+					finalBackground = condStyle.Background
+				}
+				if condStyle.FontColor != "" {
+					mergedStyle.FontColor = condStyle.FontColor
+				}
+				if condStyle.FontSize > 0 {
+					mergedStyle.FontSize = condStyle.FontSize
+				}
+				// For booleans, use OR logic (either row or conditional can enable)
+				mergedStyle.Bold = rowStyle.Bold || condStyle.Bold
+				mergedStyle.Italic = rowStyle.Italic || condStyle.Italic
+				break
+			}
+		}
+	}
+
+	return mergedStyle, finalBackground
+}
+
 // generateDataRow creates a table data row
 func generateDataRow(opts TableOptions, rowData []string, isAlternate bool) string {
 	var buf bytes.Buffer
@@ -435,14 +474,17 @@ func generateDataRow(opts TableOptions, rowData []string, isAlternate bool) stri
 
 	// Data cells
 	for _, cellData := range rowData {
+		// Resolve cell style (applying conditional formatting if applicable)
+		cellStyle, cellBackground := resolveCellStyle(cellData, opts.RowStyle, background, opts.ConditionalStyles)
+
 		buf.WriteString(generateCell(
 			cellData,
 			opts.RowAlignment,
 			opts.VerticalAlign,
-			background,
-			opts.RowStyle.Bold,
-			opts.RowStyle.Italic,
-			opts.RowStyle,
+			cellBackground,
+			cellStyle.Bold,
+			cellStyle.Italic,
+			cellStyle,
 			opts.RowStyleName,
 		))
 	}

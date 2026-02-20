@@ -665,3 +665,208 @@ func TestInsertTableMixedDirectAndNamedStyles(t *testing.T) {
 		t.Error("Direct bold formatting not found")
 	}
 }
+
+func TestInsertTableWithConditionalCellColors(t *testing.T) {
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.docx")
+	outputPath := filepath.Join(tempDir, "output.docx")
+
+	if err := os.WriteFile(inputPath, buildFixtureDocx(t), 0o644); err != nil {
+		t.Fatalf("write input fixture: %v", err)
+	}
+
+	u, err := docxupdater.New(inputPath)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+	defer u.Cleanup()
+
+	// Create table with conditional cell coloring based on status
+	err = u.InsertTable(docxupdater.TableOptions{
+		Position: docxupdater.PositionEnd,
+		Columns: []docxupdater.ColumnDefinition{
+			{Title: "Service"},
+			{Title: "Status"},
+			{Title: "Uptime"},
+		},
+		Rows: [][]string{
+			{"Database", "Critical", "45%"},
+			{"API", "Normal", "99.9%"},
+			{"Cache", "Warning", "85%"},
+			{"Auth", "Normal", "99.5%"},
+		},
+		HeaderBold:       true,
+		HeaderBackground: "4472C4",
+		RowStyle: docxupdater.CellStyle{
+			FontSize: 20,
+		},
+		// Define conditional styles for status values
+		ConditionalStyles: map[string]docxupdater.CellStyle{
+			"Critical": {
+				Background: "FF0000", // Red
+				FontColor:  "FFFFFF", // White text
+				Bold:       true,
+			},
+			"Warning": {
+				Background: "FFA500", // Orange
+				FontColor:  "000000",
+			},
+			"Normal": {
+				Background: "00B050", // Green
+				FontColor:  "FFFFFF",
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("InsertTable failed: %v", err)
+	}
+
+	if err := u.Save(outputPath); err != nil {
+		t.Fatalf("Save failed: %v", err)
+	}
+
+	docXML := readZipEntry(t, outputPath, "word/document.xml")
+
+	// Verify Critical status has red background
+	if !strings.Contains(docXML, `w:fill="FF0000"`) {
+		t.Error("Critical red background not found")
+	}
+
+	// Verify Warning status has orange background
+	if !strings.Contains(docXML, `w:fill="FFA500"`) {
+		t.Error("Warning orange background not found")
+	}
+
+	// Verify Normal status has green background
+	if !strings.Contains(docXML, `w:fill="00B050"`) {
+		t.Error("Normal green background not found")
+	}
+
+	// Verify Critical has white font color
+	if !strings.Contains(docXML, `<w:color w:val="FFFFFF"/>`) {
+		t.Error("White font color for Critical not found")
+	}
+
+	// Verify header background is still applied
+	if !strings.Contains(docXML, `w:fill="4472C4"`) {
+		t.Error("Header background color not found")
+	}
+}
+
+func TestInsertTableConditionalCaseInsensitive(t *testing.T) {
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.docx")
+	outputPath := filepath.Join(tempDir, "output.docx")
+
+	if err := os.WriteFile(inputPath, buildFixtureDocx(t), 0o644); err != nil {
+		t.Fatalf("write input fixture: %v", err)
+	}
+
+	u, err := docxupdater.New(inputPath)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+	defer u.Cleanup()
+
+	// Test case-insensitive matching
+	err = u.InsertTable(docxupdater.TableOptions{
+		Position: docxupdater.PositionEnd,
+		Columns: []docxupdater.ColumnDefinition{
+			{Title: "Item"},
+			{Title: "Priority"},
+		},
+		Rows: [][]string{
+			{"Task 1", "HIGH"},     // Uppercase
+			{"Task 2", "high"},     // Lowercase
+			{"Task 3", "High"},     // Mixed case
+			{"Task 4", "  High  "}, // With spaces
+		},
+		ConditionalStyles: map[string]docxupdater.CellStyle{
+			"High": {
+				Background: "FF6B6B",
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("InsertTable failed: %v", err)
+	}
+
+	if err := u.Save(outputPath); err != nil {
+		t.Fatalf("Save failed: %v", err)
+	}
+
+	docXML := readZipEntry(t, outputPath, "word/document.xml")
+
+	// Count occurrences of the conditional background color
+	// All 4 rows should have the same background
+	count := strings.Count(docXML, `w:fill="FF6B6B"`)
+	if count < 4 {
+		t.Errorf("Expected at least 4 occurrences of conditional color, got %d", count)
+	}
+}
+
+func TestInsertTableConditionalWithRowStyle(t *testing.T) {
+	tempDir := t.TempDir()
+	inputPath := filepath.Join(tempDir, "input.docx")
+	outputPath := filepath.Join(tempDir, "output.docx")
+
+	if err := os.WriteFile(inputPath, buildFixtureDocx(t), 0o644); err != nil {
+		t.Fatalf("write input fixture: %v", err)
+	}
+
+	u, err := docxupdater.New(inputPath)
+	if err != nil {
+		t.Fatalf("New failed: %v", err)
+	}
+	defer u.Cleanup()
+
+	// Test that conditional styles override row styles
+	err = u.InsertTable(docxupdater.TableOptions{
+		Position: docxupdater.PositionEnd,
+		Columns: []docxupdater.ColumnDefinition{
+			{Title: "Metric"},
+			{Title: "Rating"},
+		},
+		Rows: [][]string{
+			{"CPU", "Good"},
+			{"Memory", "Poor"},
+			{"Disk", "Good"},
+		},
+		RowStyle: docxupdater.CellStyle{
+			Background: "E7E6E6", // Gray default background
+			FontSize:   20,
+		},
+		// Conditional styles should override the gray background
+		ConditionalStyles: map[string]docxupdater.CellStyle{
+			"Good": {
+				Background: "00B050", // Green
+			},
+			"Poor": {
+				Background: "FF0000", // Red
+				FontColor:  "FFFFFF",
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("InsertTable failed: %v", err)
+	}
+
+	if err := u.Save(outputPath); err != nil {
+		t.Fatalf("Save failed: %v", err)
+	}
+
+	docXML := readZipEntry(t, outputPath, "word/document.xml")
+
+	// Verify conditional colors are present
+	if !strings.Contains(docXML, `w:fill="00B050"`) {
+		t.Error("Good green background not found")
+	}
+	if !strings.Contains(docXML, `w:fill="FF0000"`) {
+		t.Error("Poor red background not found")
+	}
+
+	// Verify default gray background is also present (for non-matching cells)
+	if !strings.Contains(docXML, `w:fill="E7E6E6"`) {
+		t.Error("Default gray background not found for non-matching cells")
+	}
+}
