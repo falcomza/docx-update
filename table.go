@@ -89,6 +89,19 @@ type TableOptions struct {
 	// Data rows (excluding header)
 	Rows [][]string // Each inner slice is a row of cell data
 
+	// ProportionalColumnWidths enables content-based proportional sizing
+	// When true, column widths are calculated based on the length of content
+	// (headers + longest cell) in each column. Wider content gets wider columns.
+	// If false (default), all columns get equal width.
+	// Ignored if ColumnWidths is explicitly specified.
+	ProportionalColumnWidths bool
+
+	// AvailableWidth specifies the usable page width in twips (page width - left margin - right margin)
+	// Used for auto-calculating column widths in percentage mode
+	// If 0 (default), uses standard Letter page width calculation: 12240 - 1440 - 1440 = 9360
+	// Automatically computed if not set
+	AvailableWidth int
+
 	// Header styling
 	HeaderStyle      CellStyle     // Style for header row
 	HeaderStyleName  string        // Named Word style for header paragraphs (e.g., "Heading 1")
@@ -345,19 +358,116 @@ func generateTableBorders(opts TableOptions) string {
 		opts.BorderStyle, opts.BorderSize, opts.BorderColor)
 }
 
+// calculateProportionalColumnWidths calculates column widths based on content length
+// Returns widths in twips, distributed proportionally to available space
+func calculateProportionalColumnWidths(opts TableOptions, totalWidth int) []int {
+	if len(opts.Columns) == 0 {
+		return nil
+	}
+
+	// Calculate content length for each column
+	// Each character roughly represents a certain width (default: 60 twips)
+	contentLengths := make([]int, len(opts.Columns))
+	totalContentLength := 0
+
+	for i, col := range opts.Columns {
+		// Start with header length
+		length := len(col.Title)
+
+		// Add length of longest cell in this column
+		for _, row := range opts.Rows {
+			if i < len(row) {
+				cellLen := len(row[i])
+				if cellLen > length {
+					length = cellLen
+				}
+			}
+		}
+
+		contentLengths[i] = length
+		totalContentLength += length
+	}
+
+	// Avoid division by zero
+	if totalContentLength == 0 {
+		totalContentLength = 1
+	}
+
+	// Distribute available width proportionally
+	widths := make([]int, len(opts.Columns))
+	distributedWidth := 0
+
+	for i := 0; i < len(opts.Columns); i++ {
+		// Calculate this column's proportion
+		colWidth := (totalWidth * contentLengths[i]) / totalContentLength
+
+		widths[i] = colWidth
+		distributedWidth += colWidth
+	}
+
+	// Redistribute any rounding remainder to the last column
+	if distributedWidth < totalWidth {
+		widths[len(widths)-1] += totalWidth - distributedWidth
+	}
+
+	return widths
+}
+
 // generateTableGrid defines the table column structure
 func generateTableGrid(opts TableOptions) string {
 	var buf bytes.Buffer
 	buf.WriteString("<w:tblGrid>")
 
-	// Use specified widths or calculate evenly
+	// Use specified widths or calculate
 	if len(opts.ColumnWidths) > 0 {
 		for _, width := range opts.ColumnWidths {
 			buf.WriteString(fmt.Sprintf(`<w:gridCol w:w="%d"/>`, width))
 		}
+	} else if opts.ProportionalColumnWidths {
+		// Calculate proportional widths based on content
+		var totalWidth int
+
+		if opts.TableWidthType == TableWidthPercentage {
+			availableWidth := opts.AvailableWidth
+			if availableWidth == 0 {
+				availableWidth = 9360
+			}
+			totalWidth = (availableWidth * opts.TableWidth) / 5000
+		} else if opts.TableWidthType == TableWidthFixed {
+			totalWidth = opts.TableWidth
+		} else {
+			// For auto mode, use a reasonable default
+			totalWidth = 11520
+		}
+
+		propWidths := calculateProportionalColumnWidths(opts, totalWidth)
+		for _, width := range propWidths {
+			buf.WriteString(fmt.Sprintf(`<w:gridCol w:w="%d"/>`, width))
+		}
 	} else {
-		// Auto-calculate equal widths
-		colWidth := opts.TableWidth / len(opts.Columns)
+		// Auto-calculate equal widths based on table width mode
+		var colWidth int
+
+		if opts.TableWidthType == TableWidthPercentage {
+			// For percentage mode, distribute based on available page width
+			// Grid columns must be in twips (absolute units) for proper sizing
+			availableWidth := opts.AvailableWidth
+			if availableWidth == 0 {
+				// Default: Letter portrait (12240) - 1" margins (1440 each) = 9360 twips
+				availableWidth = 9360
+			}
+			// Calculate proportion: how much of the available width this table takes
+			// Percentage is 5000-based (5000 = 100%)
+			tablePortionWidth := (availableWidth * opts.TableWidth) / 5000
+			colWidth = tablePortionWidth / len(opts.Columns)
+		} else if opts.TableWidthType == TableWidthFixed {
+			// For fixed mode, distribute the specified fixed width
+			colWidth = opts.TableWidth / len(opts.Columns)
+		} else {
+			// For auto mode, distribute a reasonable default width (8 inches = 11520 twips)
+			colWidth = 11520 / len(opts.Columns)
+		}
+
 		for range opts.Columns {
 			buf.WriteString(fmt.Sprintf(`<w:gridCol w:w="%d"/>`, colWidth))
 		}
