@@ -294,8 +294,50 @@ func insertAtBodyEnd(docXML, paraXML []byte) ([]byte, error) {
 	}
 
 	insertPos := bodyEnd
+
+	// Find the last <w:sectPr> in the document
 	if sectPrPos := bytes.LastIndex(docXML[:bodyEnd], []byte("<w:sectPr")); sectPrPos != -1 {
-		insertPos = sectPrPos
+		// Check if this sectPr is inside a paragraph's properties (<w:pPr>)
+		// This happens with section breaks that create new sections
+		precedingContent := docXML[:sectPrPos]
+
+		// Find the last <w:pPr> before the sectPr
+		lastPPrStart := bytes.LastIndex(precedingContent, []byte("<w:pPr>"))
+
+		if lastPPrStart != -1 {
+			// Check if there's a </w:pPr> between lastPPrStart and sectPrPos
+			checkRegion := docXML[lastPPrStart:sectPrPos]
+			if !bytes.Contains(checkRegion, []byte("</w:pPr>")) {
+				// sectPr is inside <w:pPr> (section break in paragraph)
+				// Check if there are other paragraphs AFTER this section break paragraph
+				// If yes, insert at body end; if no, insert after the section break paragraph
+
+				// Find the end of this section break paragraph
+				paraEndPos := bytes.Index(docXML[sectPrPos:bodyEnd], []byte("</w:p>"))
+				if paraEndPos != -1 {
+					paraEndAbsolute := sectPrPos + paraEndPos + len("</w:p>")
+
+					// Check if there are any other paragraphs between this paragraph end and </w:body>
+					afterPara := docXML[paraEndAbsolute:bodyEnd]
+					if bytes.Contains(afterPara, []byte("<w:p")) || bytes.Contains(afterPara, []byte("<w:tbl")) {
+						// There's content after the section break paragraph, insert at body end
+						insertPos = bodyEnd
+					} else {
+						// No content after section break, insert right after it
+						insertPos = paraEndAbsolute
+					}
+				} else {
+					// Fallback: use bodyEnd
+					insertPos = bodyEnd
+				}
+			} else {
+				// Normal sectPr (document-level, not in paragraph)
+				insertPos = sectPrPos
+			}
+		} else {
+			// No <w:pPr> found, use sectPr position
+			insertPos = sectPrPos
+		}
 	}
 
 	result := make([]byte, len(docXML)+len(paraXML))
