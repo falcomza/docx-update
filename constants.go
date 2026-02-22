@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import "regexp"
 
@@ -56,6 +56,12 @@ var (
 
 	// workbookNumberPattern matches numeric suffixes in workbook filenames
 	workbookNumberPattern = regexp.MustCompile(`^(.+?)(\d+)$`)
+
+	// textRunPattern matches Word text runs (<w:t ...>...</w:t>)
+	textRunPattern = regexp.MustCompile(`<w:t(?:\s[^>]*)?(>.*?</w:t>)`)
+
+	// textContentPattern extracts text from a Word text run
+	textContentPattern = regexp.MustCompile(`<w:t(?:\s[^>]*)?>(.*)</w:t>`)
 )
 
 // OpenXML namespace URIs

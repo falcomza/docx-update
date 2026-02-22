@@ -41,8 +41,8 @@ Column Width = (9360 × 5000) / 5000 / 3 = 3120 twips
 ```
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Columns: []godocx.ColumnDefinition{
         {Title: "Name"},
         {Title: "Email"},
         {Title: "Phone"},
@@ -71,8 +71,8 @@ Column Width = 7200 / 3 = 2400 twips
 ```
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Columns: []godocx.ColumnDefinition{
         {Title: "Col 1"},
         {Title: "Col 2"},
         {Title: "Col 3"},
@@ -81,7 +81,7 @@ err := u.InsertTable(docxupdater.TableOptions{
         {"A", "B", "C"},
     },
     HeaderBold: true,
-    TableWidthType: docxupdater.TableWidthFixed,
+    TableWidthType: godocx.TableWidthFixed,
     TableWidth:     7200, // 5 inches
 })
 ```
@@ -94,8 +94,8 @@ err := u.InsertTable(docxupdater.TableOptions{
 - **Note**: Actual sizing determined by Word when document is opened
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Columns: []godocx.ColumnDefinition{
         {Title: "Col 1"},
         {Title: "Col 2"},
     },
@@ -103,7 +103,7 @@ err := u.InsertTable(docxupdater.TableOptions{
         {"A", "B"},
     },
     HeaderBold: true,
-    TableWidthType: docxupdater.TableWidthAuto,
+    TableWidthType: godocx.TableWidthAuto,
 })
 ```
 
@@ -112,8 +112,8 @@ err := u.InsertTable(docxupdater.TableOptions{
 When you specify column widths explicitly, they are used as-is without applying general constraints:
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Columns: []godocx.ColumnDefinition{
         {Title: "Narrow"},
         {Title: "Wide"},
         {Title: "Medium"},
@@ -139,8 +139,8 @@ However, if you have different page layouts or margins, you can **explicitly spe
 ```go
 // Custom page layout with narrow margins (0.5" each)
 // Available width = 12240 - 720 - 720 = 10800
-err := u.InsertTable(docxupdater.TableOptions{
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Columns: []godocx.ColumnDefinition{
         {Title: "A"},
         {Title: "B"},
         {Title: "C"},
@@ -169,9 +169,9 @@ err := u.InsertTable(docxupdater.TableOptions{
 
 ```go
 // Automatically spans full page between left and right margins
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Product"},
         {Title: "Price"},
         {Title: "Stock"},
@@ -191,9 +191,9 @@ err := u.InsertTable(docxupdater.TableOptions{
 ### Scenario 2: Half-Width Table (Side-by-Side Layout)
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Col 1"},
         {Title: "Col 2"},
     },
@@ -201,7 +201,7 @@ err := u.InsertTable(docxupdater.TableOptions{
         {"A", "B"},
     },
     HeaderBold: true,
-    TableWidthType: docxupdater.TableWidthPercentage,
+    TableWidthType: godocx.TableWidthPercentage,
     TableWidth:     2500, // 50% width
     // Can place two such tables side-by-side
 })
@@ -212,9 +212,9 @@ err := u.InsertTable(docxupdater.TableOptions{
 ### Scenario 3: Fixed-Width Table
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "ID"},
         {Title: "Name"},
     },
@@ -222,7 +222,7 @@ err := u.InsertTable(docxupdater.TableOptions{
         {"001", "Item One"},
     },
     HeaderBold: true,
-    TableWidthType: docxupdater.TableWidthFixed,
+    TableWidthType: godocx.TableWidthFixed,
     TableWidth:     4320, // 3 inches wide
     // Table size independent of page margins
 })

@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 // extractGridColumnWidths extracts grid column widths from document XML
@@ -79,7 +79,7 @@ func TestTableProportionalColumnWidths(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
@@ -90,9 +90,9 @@ func TestTableProportionalColumnWidths(t *testing.T) {
 	// Column 2: "Description" (11 chars) - longest
 	// Column 3: "Price" (5 chars) - medium
 	// Proportions should be approximately 2:11:5
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "ID"},
 			{Title: "Description"},
 			{Title: "Price"},
@@ -154,16 +154,16 @@ func TestTableProportionalWithFixedWidth(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Fixed width table (6 inches = 8640 twips) with proportional columns
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "A"},
 			{Title: "Much Longer Header"},
 			{Title: "B"},
@@ -173,7 +173,7 @@ func TestTableProportionalWithFixedWidth(t *testing.T) {
 		},
 		HeaderBold:               true,
 		ProportionalColumnWidths: true,
-		TableWidthType:           docxupdater.TableWidthFixed,
+		TableWidthType:           godocx.TableWidthFixed,
 		TableWidth:               8640, // 6 inches
 	})
 	if err != nil {
@@ -216,16 +216,16 @@ func TestTableProportionalWithPercentageWidth(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// 50% width with proportional columns
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Short"},
 			{Title: "Very Long Column Header"},
 			{Title: "Med"},
@@ -235,7 +235,7 @@ func TestTableProportionalWithPercentageWidth(t *testing.T) {
 		},
 		HeaderBold:               true,
 		ProportionalColumnWidths: true,
-		TableWidthType:           docxupdater.TableWidthPercentage,
+		TableWidthType:           godocx.TableWidthPercentage,
 		TableWidth:               2500, // 50%
 	})
 	if err != nil {
@@ -273,16 +273,16 @@ func TestTableEqualWidthsStillDefault(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Default: equal widths
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "X"},
 			{Title: "Very Long Header Text"},
 			{Title: "Y"},
@@ -329,16 +329,16 @@ func TestTableProportionalIgnoredWithExplicitWidths(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Explicit column widths should ignore ProportionalColumnWidths
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "A"},
 			{Title: "Very Long Header"},
 			{Title: "B"},

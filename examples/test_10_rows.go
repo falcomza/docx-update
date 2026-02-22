@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
@@ -25,14 +25,14 @@ func main() {
 	fmt.Printf("Output file: %s\n", outputPath)
 
 	// Create updater
-	updater, err := docxupdater.New(inputPath)
+	updater, err := godocx.New(inputPath)
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
 	defer updater.Cleanup()
 
 	// Create chart data with 10 rows
-	data := docxupdater.ChartData{
+	data := godocx.ChartData{
 		Categories: []string{
 			"Device 1",
 			"Device 2",
@@ -45,7 +45,7 @@ func main() {
 			"Device 9",
 			"Device 10",
 		},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{
 				Name: "Critical",
 				Values: []float64{

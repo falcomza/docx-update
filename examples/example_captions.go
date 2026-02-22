@@ -5,32 +5,32 @@ package main
 import (
 	"log"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
 	// Open the input document
-	u, err := docxupdater.New("input.docx")
+	u, err := godocx.New("input.docx")
 	if err != nil {
 		log.Fatalf("Failed to open document: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Example 1: Chart with automatic caption (default position: after)
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Quarterly Sales Report 2024",
 		Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Revenue", Values: []float64{250000, 280000, 310000, 290000}},
 			{Name: "Profit", Values: []float64{50000, 62000, 68000, 64000}},
 		},
 		ShowLegend: true,
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionFigure,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionFigure,
 			Description: "Quarterly sales performance showing revenue and profit trends",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionAfter,
+			Position:    godocx.CaptionAfter,
 		},
 	})
 	if err != nil {
@@ -38,24 +38,24 @@ func main() {
 	}
 
 	// Example 2: Chart with caption before the chart (less common for figures)
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:          docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:          godocx.PositionEnd,
 		Title:             "Website Traffic Analysis",
 		CategoryAxisTitle: "Month",
 		ValueAxisTitle:    "Visitors (thousands)",
 		Categories:        []string{"Jan", "Feb", "Mar", "Apr", "May", "Jun"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Unique Visitors", Values: []float64{45, 52, 58, 61, 65, 70}},
 			{Name: "Page Views", Values: []float64{180, 220, 240, 255, 275, 295}},
 		},
 		ShowLegend:     true,
 		LegendPosition: "b",
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionFigure,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionFigure,
 			Description: "Monthly website traffic metrics for H1 2024",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionBefore,
-			Alignment:   docxupdater.CellAlignCenter,
+			Position:    godocx.CaptionBefore,
+			Alignment:   godocx.CellAlignCenter,
 		},
 	})
 	if err != nil {
@@ -63,9 +63,9 @@ func main() {
 	}
 
 	// Example 3: Table with caption (default position: before for tables)
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Product", Width: 2000},
 			{Title: "Q1 Sales", Width: 1500},
 			{Title: "Q2 Sales", Width: 1500},
@@ -78,12 +78,12 @@ func main() {
 			{"Product C", "$38,000", "$42,000", "$45,000", "$47,000"},
 		},
 		HeaderBold:      true,
-		HeaderAlignment: docxupdater.CellAlignCenter,
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionTable,
+		HeaderAlignment: godocx.CellAlignCenter,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionTable,
 			Description: "Product sales by quarter for 2024",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionBefore, // Default for tables
+			Position:    godocx.CaptionBefore, // Default for tables
 		},
 	})
 	if err != nil {
@@ -91,9 +91,9 @@ func main() {
 	}
 
 	// Example 4: Table with centered caption
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Department"},
 			{Title: "Budget"},
 			{Title: "Spent"},
@@ -105,14 +105,14 @@ func main() {
 			{"Sales", "$150,000", "$140,000", "$10,000"},
 		},
 		HeaderBold:       true,
-		HeaderAlignment:  docxupdater.CellAlignCenter,
+		HeaderAlignment:  godocx.CellAlignCenter,
 		HeaderBackground: "4472C4",
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionTable,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionTable,
 			Description: "Department budget allocation and expenditure",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionBefore,
-			Alignment:   docxupdater.CellAlignCenter,
+			Position:    godocx.CaptionBefore,
+			Alignment:   godocx.CellAlignCenter,
 		},
 	})
 	if err != nil {
@@ -120,14 +120,14 @@ func main() {
 	}
 
 	// Example 5: Using default caption options
-	defaultCaption := docxupdater.DefaultCaptionOptions(docxupdater.CaptionFigure)
+	defaultCaption := godocx.DefaultCaptionOptions(godocx.CaptionFigure)
 	defaultCaption.Description = "Growth trend analysis for key metrics"
 
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Annual Growth Rate",
 		Categories: []string{"2020", "2021", "2022", "2023", "2024"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Growth %", Values: []float64{5.2, 6.8, 7.1, 6.5, 8.3}},
 		},
 		ShowLegend: false,
@@ -138,20 +138,20 @@ func main() {
 	}
 
 	// Example 6: Manual numbering (no auto-numbering)
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Market Share Distribution",
 		Categories: []string{"Company A", "Company B", "Company C", "Others"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Market Share", Values: []float64{35, 28, 22, 15}},
 		},
 		ShowLegend: false,
-		Caption: &docxupdater.CaptionOptions{
-			Type:         docxupdater.CaptionFigure,
+		Caption: &godocx.CaptionOptions{
+			Type:         godocx.CaptionFigure,
 			Description:  "Current market share distribution by company",
 			AutoNumber:   false,
 			ManualNumber: 99, // Custom number
-			Position:     docxupdater.CaptionAfter,
+			Position:     godocx.CaptionAfter,
 		},
 	})
 	if err != nil {

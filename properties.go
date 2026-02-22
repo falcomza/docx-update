@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"fmt"
@@ -260,7 +260,7 @@ func (u *Updater) updateCoreProperty(content, property, value string) string {
 		return content
 	}
 
-	escapedValue := escapeXML(value)
+	escapedValue := xmlEscape(value)
 
 	if re.MatchString(content) {
 		// Update existing
@@ -318,7 +318,7 @@ func (u *Updater) updateAppProperty(content, property, value string) string {
 		return content
 	}
 
-	escapedValue := escapeXML(value)
+	escapedValue := xmlEscape(value)
 
 	if re.MatchString(content) {
 		// Update existing
@@ -379,7 +379,7 @@ func (u *Updater) generateCustomPropertiesXML(properties []CustomProperty) strin
 
 	for i, prop := range properties {
 		pid := i + 2 // PIDs start at 2
-		buf.WriteString(fmt.Sprintf(`<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="%d" name="%s">`, pid, escapeXML(prop.Name)))
+		buf.WriteString(fmt.Sprintf(`<property fmtid="{D5CDD505-2E9C-101B-9397-08002B2CF9AE}" pid="%d" name="%s">`, pid, xmlEscape(prop.Name)))
 
 		// Determine type and format value
 		propType := prop.Type
@@ -389,7 +389,7 @@ func (u *Updater) generateCustomPropertiesXML(properties []CustomProperty) strin
 
 		switch propType {
 		case "lpwstr": // String
-			buf.WriteString(fmt.Sprintf(`<vt:lpwstr>%s</vt:lpwstr>`, escapeXML(fmt.Sprintf("%v", prop.Value))))
+			buf.WriteString(fmt.Sprintf(`<vt:lpwstr>%s</vt:lpwstr>`, xmlEscape(fmt.Sprintf("%v", prop.Value))))
 		case "i4": // Integer
 			buf.WriteString(fmt.Sprintf(`<vt:i4>%v</vt:i4>`, prop.Value))
 		case "r8": // Float
@@ -479,8 +479,10 @@ func (u *Updater) addCustomPropertiesRelationship() error {
 	}
 
 	// Find next available relationship ID
-	nextID := u.getNextRelationshipID(content)
-	relID := fmt.Sprintf("rId%d", nextID)
+	relID, err := getNextRelIDFromFile(relsPath)
+	if err != nil {
+		return fmt.Errorf("find next relationship id: %w", err)
+	}
 
 	newRel := fmt.Sprintf(
 		`<Relationship Id="%s" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/custom-properties" Target="docProps/custom.xml"/>`,

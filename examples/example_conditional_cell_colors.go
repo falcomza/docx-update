@@ -5,41 +5,41 @@ package main
 import (
 	"log"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
 	// Open or create a document
-	updater, err := docxupdater.New("./templates/docx_template.docx")
+	updater, err := godocx.New("./templates/docx_template.docx")
 	if err != nil {
 		log.Fatalf("Failed to open template: %v", err)
 	}
 	defer updater.Cleanup()
 
 	// Add a title
-	err = updater.AddHeading(1, "System Status Report", docxupdater.PositionEnd)
+	err = updater.AddHeading(1, "System Status Report", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add heading: %v", err)
 	}
 
 	// Example 1: Simple status-based conditional formatting
-	err = updater.InsertParagraph(docxupdater.ParagraphOptions{
+	err = updater.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Service Health Monitoring",
-		Style:    docxupdater.StyleHeading2,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading2,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		log.Fatalf("Failed to add subheading: %v", err)
 	}
 
 	// Create a table with conditional cell coloring based on status
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Service Name", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Status", Alignment: docxupdater.CellAlignCenter},
-			{Title: "Response Time", Alignment: docxupdater.CellAlignRight},
-			{Title: "Last Check", Alignment: docxupdater.CellAlignCenter},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Service Name", Alignment: godocx.CellAlignLeft},
+			{Title: "Status", Alignment: godocx.CellAlignCenter},
+			{Title: "Response Time", Alignment: godocx.CellAlignRight},
+			{Title: "Last Check", Alignment: godocx.CellAlignCenter},
 		},
 		Rows: [][]string{
 			{"Database Server", "Critical", "2500ms", "2026-02-20 10:30"},
@@ -51,15 +51,15 @@ func main() {
 		},
 		HeaderBold:       true,
 		HeaderBackground: "2F5496",
-		HeaderAlignment:  docxupdater.CellAlignCenter,
-		HeaderStyle: docxupdater.CellStyle{
+		HeaderAlignment:  godocx.CellAlignCenter,
+		HeaderStyle: godocx.CellStyle{
 			FontColor: "FFFFFF",
 		},
-		RowStyle: docxupdater.CellStyle{
+		RowStyle: godocx.CellStyle{
 			FontSize: 20, // 10pt
 		},
 		// Conditional styling: color cells based on status text
-		ConditionalStyles: map[string]docxupdater.CellStyle{
+		ConditionalStyles: map[string]godocx.CellStyle{
 			"Critical": {
 				Background: "FF0000", // Red
 				FontColor:  "FFFFFF", // White text
@@ -79,32 +79,32 @@ func main() {
 				FontColor:  "FFFFFF",
 			},
 		},
-		BorderStyle:    docxupdater.BorderSingle,
+		BorderStyle:    godocx.BorderSingle,
 		BorderSize:     6,
 		BorderColor:    "2F5496",
-		TableAlignment: docxupdater.AlignCenter,
+		TableAlignment: godocx.AlignCenter,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert status table: %v", err)
 	}
 
 	// Example 2: Priority-based conditional formatting
-	err = updater.InsertParagraph(docxupdater.ParagraphOptions{
+	err = updater.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Issue Tracker",
-		Style:    docxupdater.StyleHeading2,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading2,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		log.Fatalf("Failed to add subheading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Issue ID", Alignment: docxupdater.CellAlignCenter},
-			{Title: "Description", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Priority", Alignment: docxupdater.CellAlignCenter},
-			{Title: "Assigned To", Alignment: docxupdater.CellAlignLeft},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Issue ID", Alignment: godocx.CellAlignCenter},
+			{Title: "Description", Alignment: godocx.CellAlignLeft},
+			{Title: "Priority", Alignment: godocx.CellAlignCenter},
+			{Title: "Assigned To", Alignment: godocx.CellAlignLeft},
 		},
 		Rows: [][]string{
 			{"ISS-001", "Database connection pool exhausted", "High", "Database Team"},
@@ -117,14 +117,14 @@ func main() {
 		HeaderBold:        true,
 		HeaderBackground:  "203864",
 		AlternateRowColor: "F2F2F2",
-		HeaderStyle: docxupdater.CellStyle{
+		HeaderStyle: godocx.CellStyle{
 			FontColor: "FFFFFF",
 		},
-		RowStyle: docxupdater.CellStyle{
+		RowStyle: godocx.CellStyle{
 			FontSize: 20,
 		},
 		// Conditional styling for priority levels
-		ConditionalStyles: map[string]docxupdater.CellStyle{
+		ConditionalStyles: map[string]godocx.CellStyle{
 			"Critical": {
 				Background: "C00000", // Dark red
 				FontColor:  "FFFFFF",
@@ -144,30 +144,30 @@ func main() {
 				FontColor:  "000000",
 			},
 		},
-		BorderStyle:    docxupdater.BorderSingle,
-		TableAlignment: docxupdater.AlignCenter,
+		BorderStyle:    godocx.BorderSingle,
+		TableAlignment: godocx.AlignCenter,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert issue table: %v", err)
 	}
 
 	// Example 3: Performance metrics with threshold-based coloring
-	err = updater.InsertParagraph(docxupdater.ParagraphOptions{
+	err = updater.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Performance Metrics",
-		Style:    docxupdater.StyleHeading2,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading2,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		log.Fatalf("Failed to add subheading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Metric", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Current Value", Alignment: docxupdater.CellAlignRight},
-			{Title: "Rating", Alignment: docxupdater.CellAlignCenter},
-			{Title: "Target", Alignment: docxupdater.CellAlignRight},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Metric", Alignment: godocx.CellAlignLeft},
+			{Title: "Current Value", Alignment: godocx.CellAlignRight},
+			{Title: "Rating", Alignment: godocx.CellAlignCenter},
+			{Title: "Target", Alignment: godocx.CellAlignRight},
 		},
 		Rows: [][]string{
 			{"CPU Usage", "45%", "Good", "< 60%"},
@@ -179,14 +179,14 @@ func main() {
 		},
 		HeaderBold:       true,
 		HeaderBackground: "4472C4",
-		HeaderStyle: docxupdater.CellStyle{
+		HeaderStyle: godocx.CellStyle{
 			FontColor: "FFFFFF",
 		},
-		RowStyle: docxupdater.CellStyle{
+		RowStyle: godocx.CellStyle{
 			FontSize: 20,
 		},
 		// Conditional styling for performance ratings
-		ConditionalStyles: map[string]docxupdater.CellStyle{
+		ConditionalStyles: map[string]godocx.CellStyle{
 			"Excellent": {
 				Background: "00B050", // Green
 				FontColor:  "FFFFFF",
@@ -206,9 +206,9 @@ func main() {
 				Bold:       true,
 			},
 		},
-		BorderStyle:    docxupdater.BorderSingle,
+		BorderStyle:    godocx.BorderSingle,
 		BorderSize:     4,
-		TableAlignment: docxupdater.AlignCenter,
+		TableAlignment: godocx.AlignCenter,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert metrics table: %v", err)

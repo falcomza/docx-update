@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func TestChartWithCaption(t *testing.T) {
@@ -18,25 +18,25 @@ func TestChartWithCaption(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert chart with caption after
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Test Chart",
 		Categories: []string{"A", "B", "C"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Series 1", Values: []float64{10, 20, 30}},
 		},
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionFigure,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionFigure,
 			Description: "Test chart description",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionAfter,
+			Position:    godocx.CaptionAfter,
 		},
 	})
 	if err != nil {
@@ -70,25 +70,25 @@ func TestChartWithCaptionBefore(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert chart with caption before
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Test Chart Before",
 		Categories: []string{"X", "Y", "Z"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Data", Values: []float64{5, 15, 25}},
 		},
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionFigure,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionFigure,
 			Description: "Caption positioned before chart",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionBefore,
+			Position:    godocx.CaptionBefore,
 		},
 	})
 	if err != nil {
@@ -115,16 +115,16 @@ func TestTableWithCaption(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert table with caption before (typical for tables)
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Column 1"},
 			{Title: "Column 2"},
 		},
@@ -132,11 +132,11 @@ func TestTableWithCaption(t *testing.T) {
 			{"Data 1", "Data 2"},
 			{"Data 3", "Data 4"},
 		},
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionTable,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionTable,
 			Description: "Sample data table",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionBefore,
+			Position:    godocx.CaptionBefore,
 		},
 	})
 	if err != nil {
@@ -169,16 +169,16 @@ func TestTableWithCaptionAfter(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert table with caption after (less common but valid)
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Item"},
 			{Title: "Value"},
 		},
@@ -186,11 +186,11 @@ func TestTableWithCaptionAfter(t *testing.T) {
 			{"A", "100"},
 			{"B", "200"},
 		},
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionTable,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionTable,
 			Description: "Values by item",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionAfter,
+			Position:    godocx.CaptionAfter,
 		},
 	})
 	if err != nil {
@@ -217,26 +217,26 @@ func TestCaptionWithManualNumbering(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert chart with manual numbering
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Manual Number Chart",
 		Categories: []string{"Q1", "Q2"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Values", Values: []float64{100, 200}},
 		},
-		Caption: &docxupdater.CaptionOptions{
-			Type:         docxupdater.CaptionFigure,
+		Caption: &godocx.CaptionOptions{
+			Type:         godocx.CaptionFigure,
 			Description:  "Manually numbered figure",
 			AutoNumber:   false,
 			ManualNumber: 42,
-			Position:     docxupdater.CaptionAfter,
+			Position:     godocx.CaptionAfter,
 		},
 	})
 	if err != nil {
@@ -266,16 +266,16 @@ func TestCaptionWithCenteredAlignment(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert table with centered caption
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Name"},
 			{Title: "Score"},
 		},
@@ -283,12 +283,12 @@ func TestCaptionWithCenteredAlignment(t *testing.T) {
 			{"Alice", "95"},
 			{"Bob", "87"},
 		},
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionTable,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionTable,
 			Description: "Student scores",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionBefore,
-			Alignment:   docxupdater.CellAlignCenter,
+			Position:    godocx.CaptionBefore,
+			Alignment:   godocx.CellAlignCenter,
 		},
 	})
 	if err != nil {
@@ -308,11 +308,11 @@ func TestCaptionWithCenteredAlignment(t *testing.T) {
 
 func TestDefaultCaptionOptions(t *testing.T) {
 	// Test default options for Figure
-	figureDefaults := docxupdater.DefaultCaptionOptions(docxupdater.CaptionFigure)
-	if figureDefaults.Type != docxupdater.CaptionFigure {
+	figureDefaults := godocx.DefaultCaptionOptions(godocx.CaptionFigure)
+	if figureDefaults.Type != godocx.CaptionFigure {
 		t.Errorf("Expected CaptionFigure, got %v", figureDefaults.Type)
 	}
-	if figureDefaults.Position != docxupdater.CaptionAfter {
+	if figureDefaults.Position != godocx.CaptionAfter {
 		t.Errorf("Expected CaptionAfter for figures, got %v", figureDefaults.Position)
 	}
 	if !figureDefaults.AutoNumber {
@@ -320,11 +320,11 @@ func TestDefaultCaptionOptions(t *testing.T) {
 	}
 
 	// Test default options for Table
-	tableDefaults := docxupdater.DefaultCaptionOptions(docxupdater.CaptionTable)
-	if tableDefaults.Type != docxupdater.CaptionTable {
+	tableDefaults := godocx.DefaultCaptionOptions(godocx.CaptionTable)
+	if tableDefaults.Type != godocx.CaptionTable {
 		t.Errorf("Expected CaptionTable, got %v", tableDefaults.Type)
 	}
-	if tableDefaults.Position != docxupdater.CaptionBefore {
+	if tableDefaults.Position != godocx.CaptionBefore {
 		t.Errorf("Expected CaptionBefore for tables, got %v", tableDefaults.Position)
 	}
 	if !tableDefaults.AutoNumber {
@@ -335,13 +335,13 @@ func TestDefaultCaptionOptions(t *testing.T) {
 func TestValidateCaptionOptions(t *testing.T) {
 	tests := []struct {
 		name    string
-		opts    *docxupdater.CaptionOptions
+		opts    *godocx.CaptionOptions
 		wantErr bool
 	}{
 		{
 			name: "valid figure caption",
-			opts: &docxupdater.CaptionOptions{
-				Type:        docxupdater.CaptionFigure,
+			opts: &godocx.CaptionOptions{
+				Type:        godocx.CaptionFigure,
 				Description: "Valid description",
 				AutoNumber:  true,
 			},
@@ -349,8 +349,8 @@ func TestValidateCaptionOptions(t *testing.T) {
 		},
 		{
 			name: "valid table caption",
-			opts: &docxupdater.CaptionOptions{
-				Type:        docxupdater.CaptionTable,
+			opts: &godocx.CaptionOptions{
+				Type:        godocx.CaptionTable,
 				Description: "Valid description",
 				AutoNumber:  true,
 			},
@@ -358,8 +358,8 @@ func TestValidateCaptionOptions(t *testing.T) {
 		},
 		{
 			name: "invalid caption type",
-			opts: &docxupdater.CaptionOptions{
-				Type:        docxupdater.CaptionType("Invalid"),
+			opts: &godocx.CaptionOptions{
+				Type:        godocx.CaptionType("Invalid"),
 				Description: "Test",
 				AutoNumber:  true,
 			},
@@ -367,18 +367,18 @@ func TestValidateCaptionOptions(t *testing.T) {
 		},
 		{
 			name: "invalid position",
-			opts: &docxupdater.CaptionOptions{
-				Type:        docxupdater.CaptionFigure,
+			opts: &godocx.CaptionOptions{
+				Type:        godocx.CaptionFigure,
 				Description: "Test",
-				Position:    docxupdater.CaptionPosition("invalid"),
+				Position:    godocx.CaptionPosition("invalid"),
 				AutoNumber:  true,
 			},
 			wantErr: true,
 		},
 		{
 			name: "description too long",
-			opts: &docxupdater.CaptionOptions{
-				Type:        docxupdater.CaptionFigure,
+			opts: &godocx.CaptionOptions{
+				Type:        godocx.CaptionFigure,
 				Description: strings.Repeat("a", 501),
 				AutoNumber:  true,
 			},
@@ -393,7 +393,7 @@ func TestValidateCaptionOptions(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := docxupdater.ValidateCaptionOptions(tt.opts)
+			err := godocx.ValidateCaptionOptions(tt.opts)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ValidateCaptionOptions() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -404,13 +404,13 @@ func TestValidateCaptionOptions(t *testing.T) {
 func TestFormatCaptionText(t *testing.T) {
 	tests := []struct {
 		name     string
-		opts     docxupdater.CaptionOptions
+		opts     godocx.CaptionOptions
 		expected string
 	}{
 		{
 			name: "auto-numbered figure",
-			opts: docxupdater.CaptionOptions{
-				Type:        docxupdater.CaptionFigure,
+			opts: godocx.CaptionOptions{
+				Type:        godocx.CaptionFigure,
 				Description: "Test description",
 				AutoNumber:  true,
 			},
@@ -418,8 +418,8 @@ func TestFormatCaptionText(t *testing.T) {
 		},
 		{
 			name: "manually numbered table",
-			opts: docxupdater.CaptionOptions{
-				Type:         docxupdater.CaptionTable,
+			opts: godocx.CaptionOptions{
+				Type:         godocx.CaptionTable,
 				Description:  "Sample table",
 				AutoNumber:   false,
 				ManualNumber: 5,
@@ -428,8 +428,8 @@ func TestFormatCaptionText(t *testing.T) {
 		},
 		{
 			name: "no description",
-			opts: docxupdater.CaptionOptions{
-				Type:       docxupdater.CaptionFigure,
+			opts: godocx.CaptionOptions{
+				Type:       godocx.CaptionFigure,
 				AutoNumber: true,
 			},
 			expected: "Figure #",
@@ -438,7 +438,7 @@ func TestFormatCaptionText(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := docxupdater.FormatCaptionText(tt.opts)
+			result := godocx.FormatCaptionText(tt.opts)
 			if result != tt.expected {
 				t.Errorf("FormatCaptionText() = %q, want %q", result, tt.expected)
 			}
@@ -455,7 +455,7 @@ func TestMultipleChartsCaptionsAutoNumbering(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
@@ -463,18 +463,18 @@ func TestMultipleChartsCaptionsAutoNumbering(t *testing.T) {
 
 	// Insert multiple charts with auto-numbered captions
 	for i := 1; i <= 3; i++ {
-		err = u.InsertChart(docxupdater.ChartOptions{
-			Position:   docxupdater.PositionEnd,
+		err = u.InsertChart(godocx.ChartOptions{
+			Position:   godocx.PositionEnd,
 			Title:      "Chart " + string(rune('A'+i-1)),
 			Categories: []string{"X", "Y"},
-			Series: []docxupdater.SeriesData{
+			Series: []godocx.SeriesData{
 				{Name: "Data", Values: []float64{float64(i * 10), float64(i * 20)}},
 			},
-			Caption: &docxupdater.CaptionOptions{
-				Type:        docxupdater.CaptionFigure,
+			Caption: &godocx.CaptionOptions{
+				Type:        godocx.CaptionFigure,
 				Description: "Chart number " + string(rune('A'+i-1)),
 				AutoNumber:  true,
-				Position:    docxupdater.CaptionAfter,
+				Position:    godocx.CaptionAfter,
 			},
 		})
 		if err != nil {

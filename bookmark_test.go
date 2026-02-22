@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func TestCreateEmptyBookmark(t *testing.T) {
@@ -18,15 +18,15 @@ func TestCreateEmptyBookmark(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create an empty bookmark
-	opts := docxupdater.DefaultBookmarkOptions()
-	opts.Position = docxupdater.PositionEnd
+	opts := godocx.DefaultBookmarkOptions()
+	opts.Position = godocx.PositionEnd
 	err = u.CreateBookmark("my_bookmark", opts)
 	if err != nil {
 		t.Fatalf("CreateBookmark failed: %v", err)
@@ -58,15 +58,15 @@ func TestCreateBookmarkWithText(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create bookmark with text
-	opts := docxupdater.DefaultBookmarkOptions()
-	opts.Position = docxupdater.PositionEnd
+	opts := godocx.DefaultBookmarkOptions()
+	opts.Position = godocx.PositionEnd
 	err = u.CreateBookmarkWithText("summary_section", "Executive Summary", opts)
 	if err != nil {
 		t.Fatalf("CreateBookmarkWithText failed: %v", err)
@@ -108,17 +108,17 @@ func TestWrapTextInBookmark(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// First, add some text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This is important content",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
@@ -162,23 +162,23 @@ func TestBookmarkWithInternalLink(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create a bookmark
-	bookmarkOpts := docxupdater.DefaultBookmarkOptions()
-	bookmarkOpts.Position = docxupdater.PositionEnd
+	bookmarkOpts := godocx.DefaultBookmarkOptions()
+	bookmarkOpts.Position = godocx.PositionEnd
 	err = u.CreateBookmarkWithText("conclusion_section", "Conclusion", bookmarkOpts)
 	if err != nil {
 		t.Fatalf("CreateBookmarkWithText failed: %v", err)
 	}
 
 	// Create an internal link to the bookmark
-	linkOpts := docxupdater.DefaultHyperlinkOptions()
-	linkOpts.Position = docxupdater.PositionBeginning
+	linkOpts := godocx.DefaultHyperlinkOptions()
+	linkOpts.Position = godocx.PositionBeginning
 	err = u.InsertInternalLink("Go to Conclusion", "conclusion_section", linkOpts)
 	if err != nil {
 		t.Fatalf("InsertInternalLink failed: %v", err)
@@ -213,13 +213,13 @@ func TestBookmarkNameValidation(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	opts := docxupdater.DefaultBookmarkOptions()
+	opts := godocx.DefaultBookmarkOptions()
 
 	tests := []struct {
 		name      string
@@ -259,14 +259,14 @@ func TestMultipleBookmarks(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	opts := docxupdater.DefaultBookmarkOptions()
-	opts.Position = docxupdater.PositionEnd
+	opts := godocx.DefaultBookmarkOptions()
+	opts.Position = godocx.PositionEnd
 
 	// Create multiple bookmarks - they should have unique IDs
 	bookmarks := []string{"bookmark_one", "bookmark_two", "bookmark_three"}
@@ -318,33 +318,33 @@ func TestBookmarkPositions(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add anchor text first
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Anchor paragraph for positioning",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
 	}
 
 	// Test PositionBeginning
-	opts1 := docxupdater.DefaultBookmarkOptions()
-	opts1.Position = docxupdater.PositionBeginning
+	opts1 := godocx.DefaultBookmarkOptions()
+	opts1.Position = godocx.PositionBeginning
 	err = u.CreateBookmark("bookmark_beginning", opts1)
 	if err != nil {
 		t.Fatalf("CreateBookmark at beginning failed: %v", err)
 	}
 
 	// Test PositionAfterText
-	opts2 := docxupdater.DefaultBookmarkOptions()
-	opts2.Position = docxupdater.PositionAfterText
+	opts2 := godocx.DefaultBookmarkOptions()
+	opts2.Position = godocx.PositionAfterText
 	opts2.Anchor = "Anchor paragraph"
 	err = u.CreateBookmark("bookmark_after", opts2)
 	if err != nil {

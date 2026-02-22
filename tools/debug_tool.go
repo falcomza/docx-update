@@ -1,3 +1,5 @@
+//go:build ignore
+
 package main
 
 import (
@@ -100,7 +102,7 @@ func checkXMLFile(r *zip.ReadCloser, path string, description string) int {
 	var result interface{}
 	if err := xml.Unmarshal(content, &result); err != nil {
 		fmt.Printf("❌ INVALID XML: %v\n", err)
-		
+
 		// Show problematic area
 		contentStr := string(content)
 		if len(contentStr) > 500 {
@@ -108,7 +110,7 @@ func checkXMLFile(r *zip.ReadCloser, path string, description string) int {
 		} else {
 			fmt.Printf("   Content: %s\n", contentStr)
 		}
-		
+
 		// Check for common issues
 		checkCommonIssues(content, path)
 		return 1

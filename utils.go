@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"archive/zip"
@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 func extractZip(zipPath, destDir string) error {
@@ -16,8 +17,17 @@ func extractZip(zipPath, destDir string) error {
 	}
 	defer r.Close()
 
+	cleanDest := filepath.Clean(destDir)
+
 	for _, f := range r.File {
 		target := filepath.Join(destDir, filepath.FromSlash(f.Name))
+
+		// Zip Slip protection: ensure the target path stays within destDir
+		cleanTarget := filepath.Clean(target)
+		if !strings.HasPrefix(cleanTarget+string(os.PathSeparator), cleanDest+string(os.PathSeparator)) &&
+			cleanTarget != cleanDest {
+			return fmt.Errorf("zip entry %s escapes target directory", f.Name)
+		}
 
 		if f.FileInfo().IsDir() {
 			if err := os.MkdirAll(target, 0755); err != nil {
@@ -116,6 +126,31 @@ func createZipFromDir(sourceDir, outZipPath string) error {
 
 	if err := out.Close(); err != nil {
 		return fmt.Errorf("close output zip: %w", err)
+	}
+
+	return nil
+}
+
+// copyFile copies a file from src to dst, creating destination directories as needed.
+func copyFile(src, dst string) error {
+	sourceFile, err := os.Open(src)
+	if err != nil {
+		return fmt.Errorf("open source: %w", err)
+	}
+	defer sourceFile.Close()
+
+	if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
+		return fmt.Errorf("create destination directory: %w", err)
+	}
+
+	destFile, err := os.Create(dst)
+	if err != nil {
+		return fmt.Errorf("create destination: %w", err)
+	}
+	defer destFile.Close()
+
+	if _, err := io.Copy(destFile, sourceFile); err != nil {
+		return fmt.Errorf("copy data: %w", err)
 	}
 
 	return nil

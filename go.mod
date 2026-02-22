@@ -1,3 +1,3 @@
-module github.com/falcomza/docx-update
+module github.com/falcomza/go-docx
 
 go 1.25

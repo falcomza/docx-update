@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func TestInsertBasicTable(t *testing.T) {
@@ -19,16 +19,16 @@ func TestInsertBasicTable(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create a simple table
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Name"},
 			{Title: "Age"},
 			{Title: "City"},
@@ -67,18 +67,18 @@ func TestInsertTableWithStyling(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Product", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Price", Alignment: docxupdater.CellAlignRight},
-			{Title: "Stock", Alignment: docxupdater.CellAlignCenter},
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Product", Alignment: godocx.CellAlignLeft},
+			{Title: "Price", Alignment: godocx.CellAlignRight},
+			{Title: "Stock", Alignment: godocx.CellAlignCenter},
 		},
 		Rows: [][]string{
 			{"Laptop", "$999", "15"},
@@ -87,11 +87,11 @@ func TestInsertTableWithStyling(t *testing.T) {
 		},
 		HeaderBold:        true,
 		HeaderBackground:  "4472C4",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "F2F2F2",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 		BorderSize:        6,
-		TableAlignment:    docxupdater.AlignCenter,
+		TableAlignment:    godocx.AlignCenter,
 	})
 	if err != nil {
 		t.Fatalf("InsertTable failed: %v", err)
@@ -119,7 +119,7 @@ func TestInsertTableWithRepeatHeader(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
@@ -135,9 +135,9 @@ func TestInsertTableWithRepeatHeader(t *testing.T) {
 		}
 	}
 
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Item"},
 			{Title: "Description"},
 			{Title: "Price"},
@@ -146,7 +146,7 @@ func TestInsertTableWithRepeatHeader(t *testing.T) {
 		HeaderBold:       true,
 		RepeatHeader:     true,
 		HeaderBackground: "2E75B5",
-		TableAlignment:   docxupdater.AlignCenter,
+		TableAlignment:   godocx.AlignCenter,
 	})
 	if err != nil {
 		t.Fatalf("InsertTable failed: %v", err)
@@ -170,16 +170,16 @@ func TestInsertTableInvalidRows(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Try to create table with mismatched column count
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Col1"},
 			{Title: "Col2"},
 		},
@@ -201,15 +201,15 @@ func TestInsertTableNoColumns(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns:  []docxupdater.ColumnDefinition{},
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns:  []godocx.ColumnDefinition{},
 		Rows:     [][]string{},
 	})
 	if err == nil {
@@ -226,15 +226,15 @@ func TestInsertTableCustomWidths(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Code"},
 			{Title: "Description"},
 			{Title: "Status"},
@@ -269,16 +269,16 @@ func TestInsertTableWidthPercentage(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with 100% width (default)
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Column 1"},
 			{Title: "Column 2"},
 		},
@@ -311,23 +311,23 @@ func TestInsertTableWidthFixed(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with fixed width in twips
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Column 1"},
 			{Title: "Column 2"},
 		},
 		Rows: [][]string{
 			{"Data 1", "Data 2"},
 		},
-		TableWidthType: docxupdater.TableWidthFixed,
+		TableWidthType: godocx.TableWidthFixed,
 		TableWidth:     7200, // 5 inches
 		HeaderBold:     true,
 	})
@@ -354,23 +354,23 @@ func TestInsertTableWidthAuto(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with auto width
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Column 1"},
 			{Title: "Column 2"},
 		},
 		Rows: [][]string{
 			{"Data 1", "Data 2"},
 		},
-		TableWidthType: docxupdater.TableWidthAuto,
+		TableWidthType: godocx.TableWidthAuto,
 		HeaderBold:     true,
 	})
 	if err != nil {
@@ -396,23 +396,23 @@ func TestInsertTableWidth50Percent(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with 50% width
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Column 1"},
 			{Title: "Column 2"},
 		},
 		Rows: [][]string{
 			{"Data 1", "Data 2"},
 		},
-		TableWidthType: docxupdater.TableWidthPercentage,
+		TableWidthType: godocx.TableWidthPercentage,
 		TableWidth:     2500, // 50% (5000 = 100%)
 		HeaderBold:     true,
 	})
@@ -439,16 +439,16 @@ func TestInsertTableRowHeightExact(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with exact row heights
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Name"},
 			{Title: "Value"},
 		},
@@ -457,9 +457,9 @@ func TestInsertTableRowHeightExact(t *testing.T) {
 			{"Row 2", "Data 2"},
 		},
 		HeaderRowHeight:  720, // 0.5 inch for header
-		HeaderHeightRule: docxupdater.RowHeightExact,
+		HeaderHeightRule: godocx.RowHeightExact,
 		RowHeight:        360, // 0.25 inch for data rows
-		RowHeightRule:    docxupdater.RowHeightExact,
+		RowHeightRule:    godocx.RowHeightExact,
 		HeaderBold:       true,
 	})
 	if err != nil {
@@ -488,23 +488,23 @@ func TestInsertTableRowHeightAtLeast(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with minimum row heights
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Description"},
 		},
 		Rows: [][]string{
 			{"This is a row that might have varying content length"},
 		},
 		RowHeight:     500,
-		RowHeightRule: docxupdater.RowHeightAtLeast,
+		RowHeightRule: godocx.RowHeightAtLeast,
 		HeaderBold:    true,
 	})
 	if err != nil {
@@ -530,16 +530,16 @@ func TestInsertTableRowHeightAuto(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with auto row heights (default)
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Auto Height"},
 		},
 		Rows: [][]string{
@@ -573,16 +573,16 @@ func TestInsertTableWithNamedStyles(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with named Word styles
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Heading Column"},
 			{Title: "Normal Column"},
 		},
@@ -621,16 +621,16 @@ func TestInsertTableMixedDirectAndNamedStyles(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table mixing named styles and direct formatting
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Column 1"},
 			{Title: "Column 2"},
 		},
@@ -641,7 +641,7 @@ func TestInsertTableMixedDirectAndNamedStyles(t *testing.T) {
 		HeaderBold:       true,       // Plus direct formatting
 		HeaderBackground: "70AD47",
 		RowStyleName:     "Normal", // Named style for rows
-		RowStyle: docxupdater.CellStyle{ // Plus direct formatting
+		RowStyle: godocx.CellStyle{ // Plus direct formatting
 			FontSize: 20, // 10pt
 		},
 	})
@@ -675,16 +675,16 @@ func TestInsertTableWithConditionalCellColors(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create table with conditional cell coloring based on status
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Service"},
 			{Title: "Status"},
 			{Title: "Uptime"},
@@ -697,11 +697,11 @@ func TestInsertTableWithConditionalCellColors(t *testing.T) {
 		},
 		HeaderBold:       true,
 		HeaderBackground: "4472C4",
-		RowStyle: docxupdater.CellStyle{
+		RowStyle: godocx.CellStyle{
 			FontSize: 20,
 		},
 		// Define conditional styles for status values
-		ConditionalStyles: map[string]docxupdater.CellStyle{
+		ConditionalStyles: map[string]godocx.CellStyle{
 			"Critical": {
 				Background: "FF0000", // Red
 				FontColor:  "FFFFFF", // White text
@@ -762,16 +762,16 @@ func TestInsertTableConditionalCaseInsensitive(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Test case-insensitive matching
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Item"},
 			{Title: "Priority"},
 		},
@@ -781,7 +781,7 @@ func TestInsertTableConditionalCaseInsensitive(t *testing.T) {
 			{"Task 3", "High"},     // Mixed case
 			{"Task 4", "  High  "}, // With spaces
 		},
-		ConditionalStyles: map[string]docxupdater.CellStyle{
+		ConditionalStyles: map[string]godocx.CellStyle{
 			"High": {
 				Background: "FF6B6B",
 			},
@@ -814,16 +814,16 @@ func TestInsertTableConditionalWithRowStyle(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Test that conditional styles override row styles
-	err = u.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = u.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Metric"},
 			{Title: "Rating"},
 		},
@@ -832,12 +832,12 @@ func TestInsertTableConditionalWithRowStyle(t *testing.T) {
 			{"Memory", "Poor"},
 			{"Disk", "Good"},
 		},
-		RowStyle: docxupdater.CellStyle{
+		RowStyle: godocx.CellStyle{
 			Background: "E7E6E6", // Gray default background
 			FontSize:   20,
 		},
 		// Conditional styles should override the gray background
-		ConditionalStyles: map[string]docxupdater.CellStyle{
+		ConditionalStyles: map[string]godocx.CellStyle{
 			"Good": {
 				Background: "00B050", // Green
 			},

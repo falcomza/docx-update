@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 // ChartData defines chart categories and series values.
 type ChartData struct {

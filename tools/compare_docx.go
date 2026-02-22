@@ -1,3 +1,5 @@
+//go:build ignore
+
 package main
 
 import (
@@ -109,13 +111,13 @@ func main() {
 		}
 
 		// Size difference
-		fmt.Printf("  Size: %d vs %d bytes (%+d)\n", 
+		fmt.Printf("  Size: %d vs %d bytes (%+d)\n",
 			len(content1), len(content2), len(content2)-len(content1))
 
 		// Show first difference
 		str1 := string(content1)
 		str2 := string(content2)
-		
+
 		// Find first difference position
 		minLen := len(str1)
 		if len(str2) < minLen {
@@ -136,9 +138,9 @@ func main() {
 				contextStart = 0
 			}
 			contextEnd := firstDiff + 50
-			
+
 			fmt.Printf("  First difference at position %d:\n", firstDiff)
-			
+
 			if contextEnd <= len(str1) {
 				fmt.Printf("    File 1: ...%s...\n", str1[contextStart:contextEnd])
 			}
@@ -167,11 +169,11 @@ func checkDifferences(filename string, content1, content2 []byte) {
 	if strings.Contains(filename, ".rels") {
 		ids1 := extractRelIds(str1)
 		ids2 := extractRelIds(str2)
-		
+
 		if len(ids1) != len(ids2) {
 			fmt.Printf("  ⚠️  Different number of relationships: %d vs %d\n", len(ids1), len(ids2))
 		}
-		
+
 		// Check for duplicate IDs in file 2
 		idCount := make(map[string]int)
 		for _, id := range ids2 {

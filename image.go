@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -215,9 +216,8 @@ func (u *Updater) getNextImageIndex() (int, error) {
 		}
 		matches := imageFilePattern.FindStringSubmatch(entry.Name())
 		if len(matches) > 1 {
-			var index int
-			fmt.Sscanf(matches[1], "%d", &index)
-			if index > maxIndex {
+			index, err := strconv.Atoi(matches[1])
+			if err == nil && index > maxIndex {
 				maxIndex = index
 			}
 		}

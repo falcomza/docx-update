@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 // TestSetCoreProperties tests setting core document properties
@@ -24,14 +24,14 @@ func TestSetCoreProperties(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Set core properties
-	props := docxupdater.CoreProperties{
+	props := godocx.CoreProperties{
 		Title:          "Test Document Title",
 		Subject:        "Document Testing",
 		Creator:        "John Doe",
@@ -70,14 +70,14 @@ func TestGetCoreProperties(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Set properties first
-	originalProps := docxupdater.CoreProperties{
+	originalProps := godocx.CoreProperties{
 		Title:       "Get Test Title",
 		Creator:     "Test Author",
 		Keywords:    "read, test",
@@ -126,14 +126,14 @@ func TestSetAppProperties(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Set app properties
-	appProps := docxupdater.AppProperties{
+	appProps := godocx.AppProperties{
 		Company:     "TechVenture Inc",
 		Manager:     "Alice Johnson",
 		Application: "Microsoft Word",
@@ -172,14 +172,14 @@ func TestSetCustomProperties(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Set custom properties with various types
-	customProps := []docxupdater.CustomProperty{
+	customProps := []godocx.CustomProperty{
 		{Name: "ProjectName", Value: "Alpha Project", Type: "lpwstr"},
 		{Name: "Version", Value: 2, Type: "i4"},
 		{Name: "Budget", Value: 150000.50, Type: "r8"},
@@ -222,14 +222,14 @@ func TestCustomPropertiesInferTypes(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Custom properties without explicit type (type will be inferred)
-	customProps := []docxupdater.CustomProperty{
+	customProps := []godocx.CustomProperty{
 		{Name: "StringProp", Value: "Hello World"},
 		{Name: "IntProp", Value: 42},
 		{Name: "FloatProp", Value: 3.14159},
@@ -258,14 +258,14 @@ func TestUpdateExistingProperties(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Set initial properties
-	props1 := docxupdater.CoreProperties{
+	props1 := godocx.CoreProperties{
 		Title:   "Original Title",
 		Creator: "Original Author",
 	}
@@ -275,7 +275,7 @@ func TestUpdateExistingProperties(t *testing.T) {
 	}
 
 	// Update properties
-	props2 := docxupdater.CoreProperties{
+	props2 := godocx.CoreProperties{
 		Title:       "Updated Title",
 		Creator:     "Updated Author",
 		Description: "Added description",
@@ -312,14 +312,14 @@ func TestEmptyProperties(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Set properties with some empty values
-	props := docxupdater.CoreProperties{
+	props := godocx.CoreProperties{
 		Title:   "Non-empty Title",
 		Creator: "", // Empty
 		Subject: "Non-empty Subject",
@@ -344,14 +344,14 @@ func TestPropertiesXMLEscaping(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Properties with special XML characters
-	props := docxupdater.CoreProperties{
+	props := godocx.CoreProperties{
 		Title:       "Test & Demo <Document>",
 		Description: "Testing \"quotes\" and 'apostrophes'",
 		Keywords:    "xml, <tags>, & symbols",
@@ -368,7 +368,7 @@ func TestPropertiesXMLEscaping(t *testing.T) {
 	}
 
 	// Verify the document can be opened again
-	u2, err := docxupdater.New(outputPath)
+	u2, err := godocx.New(outputPath)
 	if err != nil {
 		t.Fatalf("Failed to reopen document with escaped properties: %v", err)
 	}
@@ -392,14 +392,14 @@ func TestCompletePropertiesWorkflow(t *testing.T) {
 	}
 
 	t.Log("Step 1: Opening document...")
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	t.Log("Step 2: Setting core properties...")
-	coreProps := docxupdater.CoreProperties{
+	coreProps := godocx.CoreProperties{
 		Title:          "Annual Financial Report 2026",
 		Subject:        "Q4 Financial Results",
 		Creator:        "Finance Department",
@@ -417,7 +417,7 @@ func TestCompletePropertiesWorkflow(t *testing.T) {
 	}
 
 	t.Log("Step 3: Setting app properties...")
-	appProps := docxupdater.AppProperties{
+	appProps := godocx.AppProperties{
 		Company:     "Global Finance Corp",
 		Manager:     "Sarah Williams",
 		Application: "Microsoft Word",
@@ -429,7 +429,7 @@ func TestCompletePropertiesWorkflow(t *testing.T) {
 	}
 
 	t.Log("Step 4: Setting custom properties...")
-	customProps := []docxupdater.CustomProperty{
+	customProps := []godocx.CustomProperty{
 		{Name: "FiscalYear", Value: 2026},
 		{Name: "Quarter", Value: "Q4"},
 		{Name: "Revenue", Value: 12500000.75},
@@ -469,23 +469,23 @@ func TestPropertiesWithExistingContent(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add some content
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This document has both content and properties.",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert paragraph: %v", err)
 	}
 
 	// Set properties
-	props := docxupdater.CoreProperties{
+	props := godocx.CoreProperties{
 		Title:   "Document with Content and Properties",
 		Creator: "Integration Test",
 	}
@@ -510,16 +510,16 @@ func TestPropertiesVerifyFiles(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Set all property types
-	u.SetCoreProperties(docxupdater.CoreProperties{Title: "Test"})
-	u.SetAppProperties(docxupdater.AppProperties{Company: "TestCo"})
-	u.SetCustomProperties([]docxupdater.CustomProperty{{Name: "Test", Value: "Value"}})
+	u.SetCoreProperties(godocx.CoreProperties{Title: "Test"})
+	u.SetAppProperties(godocx.AppProperties{Company: "TestCo"})
+	u.SetCustomProperties([]godocx.CustomProperty{{Name: "Test", Value: "Value"}})
 
 	// Check that files exist
 	coreXML := filepath.Join(u.TempDir(), "docProps", "core.xml")

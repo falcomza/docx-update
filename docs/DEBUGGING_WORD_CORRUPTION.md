@@ -86,18 +86,11 @@ All `r:id="rId123"` in document.xml must exist in document.xml.rels
 
 **Fix in library:** Check your relationship generation code:
 ```go
-// In chart_copy.go or similar - ensure unique IDs
-func getNextRelationshipID(rels *Relationships) string {
-    maxID := 0
-    for _, rel := range rels.Relationship {
-        var id int
-        if _, err := fmt.Sscanf(rel.Id, "rId%d", &id); err == nil {
-            if id > maxID {
-                maxID = id
-            }
-        }
-    }
-    return fmt.Sprintf("rId%d", maxID+1)
+// In helpers.go or similar - ensure unique IDs
+func getNextRelIDFromFile(relsPath string) (string, error) {
+    // Parse relationships and return next rIdN
+    // using max existing relationship ID + 1.
+    // Reuse this helper across chart/image/header/footer/hyperlink flows.
 }
 ```
 
@@ -234,9 +227,9 @@ Based on your codebase:
    - Line 144: `updateChartXMLContent` - check namespace prefix handling
    - Ensure all generated XML is well-formed
 
-2. **chart_copy.go** - Chart duplication
-   - Line 153: `xml.MarshalIndent` - verify output
-   - Check relationship ID generation
+2. **chart.go / helpers.go** - Chart insertion + relationship handling
+   - Verify generated chart XML output is well-formed
+   - Check shared relationship ID generation helper
 
 3. **excel_handler.go** - Embedded Excel workbooks
    - Lines 122, 130: Unmarshal operations

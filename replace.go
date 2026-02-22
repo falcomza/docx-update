@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"fmt"
@@ -175,12 +175,22 @@ func (u *Updater) replaceRegexInFile(path string, pattern *regexp.Regexp, replac
 func (u *Updater) replaceTextInXML(raw []byte, old, new string, opts ReplaceOptions, count *int) ([]byte, int) {
 	content := string(raw)
 	replaced := 0
+	escapedOld := regexp.QuoteMeta(old)
+	wordRe := (*regexp.Regexp)(nil)
+	caseInsensitiveRe := (*regexp.Regexp)(nil)
+	if opts.WholeWord {
+		wordPattern := fmt.Sprintf(`\b%s\b`, escapedOld)
+		if !opts.MatchCase {
+			wordPattern = `(?i)` + wordPattern
+		}
+		wordRe = regexp.MustCompile(wordPattern)
+	} else if !opts.MatchCase {
+		caseInsensitiveRe = regexp.MustCompile(`(?i)` + escapedOld)
+	}
 
 	// Extract text runs (<w:t> elements) and replace within them
 	// Use word boundary \b or explicit space/> to avoid matching <w:tabs>, <w:tbl>, <w:tc>, etc.
-	textPattern := regexp.MustCompile(`<w:t(?:\s[^>]*)?(>.*?</w:t>)`)
-
-	content = textPattern.ReplaceAllStringFunc(content, func(match string) string {
+	content = textRunPattern.ReplaceAllStringFunc(content, func(match string) string {
 		// Check if we've hit the max replacements
 		if opts.MaxReplacements > 0 && *count >= opts.MaxReplacements {
 			return match
@@ -188,7 +198,6 @@ func (u *Updater) replaceTextInXML(raw []byte, old, new string, opts ReplaceOpti
 
 		// Extract the text content
 		// Match the full element: <w:t> or <w:t xml:space="preserve">text</w:t>
-		textContentPattern := regexp.MustCompile(`<w:t(?:\s[^>]*)?>(.*)` + `</w:t>`)
 		matches := textContentPattern.FindStringSubmatch(match)
 		if len(matches) < 2 {
 			return match
@@ -198,13 +207,7 @@ func (u *Updater) replaceTextInXML(raw []byte, old, new string, opts ReplaceOpti
 		var replacedText string
 
 		if opts.WholeWord {
-			// Use word boundary for whole word matching
-			wordPattern := fmt.Sprintf(`\b%s\b`, regexp.QuoteMeta(old))
-			if !opts.MatchCase {
-				wordPattern = `(?i)` + wordPattern
-			}
-			re := regexp.MustCompile(wordPattern)
-			replacedText = re.ReplaceAllStringFunc(text, func(m string) string {
+			replacedText = wordRe.ReplaceAllStringFunc(text, func(m string) string {
 				if opts.MaxReplacements > 0 && *count >= opts.MaxReplacements {
 					return m
 				}
@@ -228,8 +231,7 @@ func (u *Updater) replaceTextInXML(raw []byte, old, new string, opts ReplaceOpti
 			}
 		} else {
 			// Case-insensitive replacement
-			re := regexp.MustCompile(`(?i)` + regexp.QuoteMeta(old))
-			replacedText = re.ReplaceAllStringFunc(text, func(m string) string {
+			replacedText = caseInsensitiveRe.ReplaceAllStringFunc(text, func(m string) string {
 				if opts.MaxReplacements > 0 && *count >= opts.MaxReplacements {
 					return m
 				}
@@ -240,7 +242,7 @@ func (u *Updater) replaceTextInXML(raw []byte, old, new string, opts ReplaceOpti
 		}
 
 		if replacedText != text {
-			return strings.Replace(match, text, escapeXML(replacedText), 1)
+			return strings.Replace(match, text, xmlEscape(replacedText), 1)
 		}
 		return match
 	})
@@ -255,9 +257,7 @@ func (u *Updater) replaceRegexInXML(raw []byte, pattern *regexp.Regexp, replacem
 
 	// Extract text runs (<w:t> elements) and replace within them
 	// Use word boundary or explicit space/> to avoid matching <w:tabs>, <w:tbl>, <w:tc>, etc.
-	textPattern := regexp.MustCompile(`<w:t(?:\s[^>]*)?(>.*?</w:t>)`)
-
-	content = textPattern.ReplaceAllStringFunc(content, func(match string) string {
+	content = textRunPattern.ReplaceAllStringFunc(content, func(match string) string {
 		// Check if we've hit the max replacements
 		if opts.MaxReplacements > 0 && *count >= opts.MaxReplacements {
 			return match
@@ -265,7 +265,6 @@ func (u *Updater) replaceRegexInXML(raw []byte, pattern *regexp.Regexp, replacem
 
 		// Extract the text content
 		// Match the full element: <w:t> or <w:t xml:space="preserve">text</w:t>
-		textContentPattern := regexp.MustCompile(`<w:t(?:\s[^>]*)?>(.*)` + `</w:t>`)
 		matches := textContentPattern.FindStringSubmatch(match)
 		if len(matches) < 2 {
 			return match
@@ -282,20 +281,10 @@ func (u *Updater) replaceRegexInXML(raw []byte, pattern *regexp.Regexp, replacem
 		})
 
 		if replacedText != text {
-			return strings.Replace(match, text, escapeXML(replacedText), 1)
+			return strings.Replace(match, text, xmlEscape(replacedText), 1)
 		}
 		return match
 	})
 
 	return []byte(content), replaced
-}
-
-// escapeXML escapes special XML characters
-func escapeXML(s string) string {
-	s = strings.ReplaceAll(s, "&", "&amp;")
-	s = strings.ReplaceAll(s, "<", "&lt;")
-	s = strings.ReplaceAll(s, ">", "&gt;")
-	s = strings.ReplaceAll(s, "\"", "&quot;")
-	s = strings.ReplaceAll(s, "'", "&apos;")
-	return s
 }

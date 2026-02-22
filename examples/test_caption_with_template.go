@@ -6,7 +6,7 @@ import (
 	"log"
 	"path/filepath"
 
-	updater "github.com/falcomza/docx-update"
+	updater "github.com/falcomza/go-docx"
 )
 
 func main() {

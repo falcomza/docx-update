@@ -5,29 +5,29 @@ package main
 import (
 	"log"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
 	// Create a simple demo showing conditional cell coloring
-	updater, err := docxupdater.New("./templates/docx_template.docx")
+	updater, err := godocx.New("./templates/docx_template.docx")
 	if err != nil {
 		log.Fatalf("Failed to open template: %v", err)
 	}
 	defer updater.Cleanup()
 
-	err = updater.AddHeading(1, "Conditional Cell Color Demo", docxupdater.PositionEnd)
+	err = updater.AddHeading(1, "Conditional Cell Color Demo", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add heading: %v", err)
 	}
 
 	// Simple table with status-based coloring
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Server", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Status", Alignment: docxupdater.CellAlignCenter},
-			{Title: "Response Time", Alignment: docxupdater.CellAlignRight},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Server", Alignment: godocx.CellAlignLeft},
+			{Title: "Status", Alignment: godocx.CellAlignCenter},
+			{Title: "Response Time", Alignment: godocx.CellAlignRight},
 		},
 		Rows: [][]string{
 			{"Web Server", "Critical", "3000ms"},
@@ -39,11 +39,11 @@ func main() {
 		},
 		HeaderBold:       true,
 		HeaderBackground: "2F5496",
-		HeaderStyle: docxupdater.CellStyle{
+		HeaderStyle: godocx.CellStyle{
 			FontColor: "FFFFFF",
 		},
 		// THIS IS THE NEW FEATURE - Conditional cell coloring!
-		ConditionalStyles: map[string]docxupdater.CellStyle{
+		ConditionalStyles: map[string]godocx.CellStyle{
 			"Critical": {
 				Background: "FF0000", // Red background
 				FontColor:  "FFFFFF", // White text
@@ -63,8 +63,8 @@ func main() {
 				FontColor:  "FFFFFF",
 			},
 		},
-		BorderStyle:    docxupdater.BorderSingle,
-		TableAlignment: docxupdater.AlignCenter,
+		BorderStyle:    godocx.BorderSingle,
+		TableAlignment: godocx.AlignCenter,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert table: %v", err)

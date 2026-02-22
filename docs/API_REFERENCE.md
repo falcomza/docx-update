@@ -1,6 +1,6 @@
 # DOCX Update Library - API Reference
 
-**Module**: `github.com/falcomza/docx-update`
+**Module**: `github.com/falcomza/go-docx`
 **Go Version**: 1.25.7+
 **Fiber Version**: v3.0.0+
 
@@ -21,10 +21,10 @@
 ## Package Overview
 
 ```go
-import docxupdater "github.com/falcomza/docx-update"
+import godocx "github.com/falcomza/go-docx"
 ```
 
-The `docxupdater` package provides functionality for programmatically manipulating Microsoft Word (DOCX) documents. It operates directly on the OpenXML format, enabling chart updates, table insertion, image embedding, and text operations.
+The `godocx` package provides functionality for programmatically manipulating Microsoft Word (DOCX) documents. It operates directly on the OpenXML format, enabling chart updates, table insertion, image embedding, and text operations.
 
 **Key characteristics:**
 - Safe for concurrent use (each `Updater` instance uses isolated temp directories)
@@ -37,14 +37,14 @@ The `docxupdater` package provides functionality for programmatically manipulati
 ## Installation
 
 ```bash
-go get github.com/falcomza/docx-update@latest
+go get github.com/falcomza/go-docx@latest
 ```
 
 ### Import in Fiber Application
 
 ```go
 import (
-    docxupdater "github.com/falcomza/docx-update"
+    godocx "github.com/falcomza/go-docx"
     "github.com/gofiber/fiber/v3"
 )
 ```
@@ -65,7 +65,7 @@ type Updater struct {
 
 **Lifecycle:**
 ```go
-updater, err := docxupdater.New("input.docx")
+updater, err := godocx.New("input.docx")
 if err != nil {
     return err
 }
@@ -98,9 +98,9 @@ type ChartData struct {
 
 **Example:**
 ```go
-data := docxupdater.ChartData{
+data := godocx.ChartData{
     Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {
             Name:   "Revenue",
             Values: []float64{1000, 1500, 1200, 1800},
@@ -639,7 +639,7 @@ Creates a new Updater by extracting the DOCX file to a temporary directory.
 
 **Example:**
 ```go
-updater, err := docxupdater.New("template.docx")
+updater, err := godocx.New("template.docx")
 if err != nil {
     return fmt.Errorf("failed to load template: %w", err)
 }
@@ -716,37 +716,12 @@ Updates a specific chart's data and embedded workbook.
 
 **Example:**
 ```go
-err := updater.UpdateChart(1, docxupdater.ChartData{
+err := updater.UpdateChart(1, godocx.ChartData{
     Categories: []string{"A", "B", "C"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {Name: "Series 1", Values: []float64{1, 2, 3}},
     },
 })
-```
-
-#### CopyChart
-
-```go
-func (u *Updater) CopyChart(sourceChartIndex int, afterText string) (int, error)
-```
-
-Duplicates a chart with its embedded workbook.
-
-**Parameters:**
-- `sourceChartIndex`: 1-based index of chart to copy
-- `afterText`: Ignored (kept for backward compatibility)
-
-**Returns:**
-- `int`: New chart's 1-based index
-- `error`: Chart not found, copy operation failed
-
-**Example:**
-```go
-newIndex, err := updater.CopyChart(1, "")
-if err != nil {
-    return err
-}
-updater.UpdateChart(newIndex, newData)
 ```
 
 #### InsertChart
@@ -771,12 +746,12 @@ Creates a new chart with embedded Excel workbook and inserts it into the documen
 
 **Example:**
 ```go
-err := updater.InsertChart(docxupdater.ChartOptions{
-    Position:  docxupdater.PositionEnd,
-    ChartKind: docxupdater.ChartKindColumn,
+err := updater.InsertChart(godocx.ChartOptions{
+    Position:  godocx.PositionEnd,
+    ChartKind: godocx.ChartKindColumn,
     Title:     "Sales by Quarter",
     Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {Name: "2023", Values: []float64{100, 150, 120, 180}},
         {Name: "2024", Values: []float64{120, 170, 140, 200}},
     },
@@ -816,7 +791,7 @@ Removes the temporary workspace.
 
 **Example:**
 ```go
-updater, err := docxupdater.New("input.docx")
+updater, err := godocx.New("input.docx")
 if err != nil {
     return err
 }
@@ -843,10 +818,10 @@ Inserts a single paragraph.
 
 **Example:**
 ```go
-updater.InsertParagraph(docxupdater.ParagraphOptions{
+updater.InsertParagraph(godocx.ParagraphOptions{
     Text:     "Section Title",
-    Style:    docxupdater.StyleHeading2,
-    Position: docxupdater.PositionBeginning,
+    Style:    godocx.StyleHeading2,
+    Position: godocx.PositionBeginning,
 })
 ```
 
@@ -886,8 +861,8 @@ Inserts a styled table with optional caption.
 
 **Example:**
 ```go
-updater.InsertTable(docxupdater.TableOptions{
-    Columns: []docxupdater.ColumnDefinition{
+updater.InsertTable(godocx.TableOptions{
+    Columns: []godocx.ColumnDefinition{
         {Title: "Name", Width: 2000},
         {Title: "Value", Width: 1000},
     },
@@ -895,12 +870,12 @@ updater.InsertTable(docxupdater.TableOptions{
         {"Item 1", "100"},
         {"Item 2", "200"},
     },
-    HeaderStyle: docxupdater.CellStyle{
+    HeaderStyle: godocx.CellStyle{
         Bold:      true,
         FontColor: "FFFFFF",
         Background: "4472C4",
     },
-    TableStyle: docxupdater.TableStyleProfessional,
+    TableStyle: godocx.TableStyleProfessional,
 })
 ```
 
@@ -916,10 +891,10 @@ Inserts an image with proportional scaling.
 
 **Example:**
 ```go
-updater.InsertImage(docxupdater.ImageOptions{
+updater.InsertImage(godocx.ImageOptions{
     Path:     "./assets/logo.png",
     Width:    300,
-    Position: docxupdater.PositionBeginning,
+    Position: godocx.PositionBeginning,
 })
 ```
 
@@ -935,7 +910,7 @@ Searches for text in the document.
 
 **Example:**
 ```go
-matches, err := updater.FindText("TODO", docxupdater.FindOptions{
+matches, err := updater.FindText("TODO", godocx.FindOptions{
     MatchCase:    true,
     InParagraphs: true,
 })
@@ -1057,7 +1032,7 @@ Sets the core document properties (metadata).
 
 **Example:**
 ```go
-err := updater.SetCoreProperties(docxupdater.CoreProperties{
+err := updater.SetCoreProperties(godocx.CoreProperties{
     Title:       "Annual Report 2024",
     Subject:     "Financial Performance",
     Creator:     "Finance Department",
@@ -1083,7 +1058,7 @@ Sets application-specific document properties.
 
 **Example:**
 ```go
-err := updater.SetAppProperties(docxupdater.AppProperties{
+err := updater.SetAppProperties(godocx.AppProperties{
     Company:     "Acme Corporation",
     Manager:     "John Smith",
     Application: "Microsoft Word",
@@ -1114,7 +1089,7 @@ Sets custom document properties with typed values.
 
 **Example:**
 ```go
-err := updater.SetCustomProperties([]docxupdater.CustomProperty{
+err := updater.SetCustomProperties([]godocx.CustomProperty{
     {Name: "ProjectCode", Value: "PRJ-2024-001"},
     {Name: "Budget", Value: 150000.50},
     {Name: "Approved", Value: true},
@@ -1171,14 +1146,14 @@ Creates an empty bookmark marker at the specified position.
 **Example:**
 ```go
 // Create hidden bookmark at document end
-err := updater.CreateBookmark("section_start", docxupdater.BookmarkOptions{
-    Position: docxupdater.PositionEnd,
+err := updater.CreateBookmark("section_start", godocx.BookmarkOptions{
+    Position: godocx.PositionEnd,
     Hidden:   true,
 })
 
 // Create bookmark after specific text
-err := updater.CreateBookmark("summary", docxupdater.BookmarkOptions{
-    Position: docxupdater.PositionAfterText,
+err := updater.CreateBookmark("summary", godocx.BookmarkOptions{
+    Position: godocx.PositionAfterText,
     Anchor:   "Executive Summary",
 })
 ```
@@ -1204,10 +1179,10 @@ Creates a bookmark that wraps specific text content.
 err := updater.CreateBookmarkWithText(
     "important_section",
     "Critical Information",
-    docxupdater.BookmarkOptions{
-        Position: docxupdater.PositionAfterText,
+    godocx.BookmarkOptions{
+        Position: godocx.PositionAfterText,
         Anchor:   "Introduction",
-        Style:    docxupdater.StyleHeading2,
+        Style:    godocx.StyleHeading2,
     },
 )
 ```
@@ -1229,7 +1204,7 @@ package main
 
 import (
     "github.com/gofiber/fiber/v3"
-    docxupdater "github.com/falcomza/docx-update"
+    godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
@@ -1366,7 +1341,7 @@ func processDocument(
     defer os.Remove(tempPath)
 
     // Create updater
-    updater, err := docxupdater.New(tempPath)
+    updater, err := godocx.New(tempPath)
     if err != nil {
         return false
     }
@@ -1411,7 +1386,7 @@ func BatchProcessHandler(c *fiber.Ctx) error {
     file, _ := c.FormFile("document")
     tempPath := saveUploadedFile(file)
 
-    updater, err := docxupdater.New(tempPath)
+    updater, err := godocx.New(tempPath)
     if err != nil {
         return err
     }
@@ -1437,7 +1412,7 @@ func BatchProcessHandler(c *fiber.Ctx) error {
     })
 }
 
-func executeOperation(u *docxupdater.Updater, op BatchOperation) error {
+func executeOperation(u *godocx.Updater, op BatchOperation) error {
     switch op.Type {
     case "chart":
         return executeChartUpdate(u, op.Payload)
@@ -1517,7 +1492,7 @@ func processJobAsync(jobID string, file *multipart.FileHeader, req UpdateChartRe
 
     tempPath := saveUploadedFileToTemp(file)
 
-    updater, err := docxupdater.New(tempPath)
+    updater, err := godocx.New(tempPath)
     if err != nil {
         j.Status = "failed"
         j.Error = err.Error()
@@ -1586,7 +1561,7 @@ func DownloadDocumentHandler(c *fiber.Ctx) error {
 ```go
 func handleError(c *fiber.Ctx, err error) error {
     // Check for DocxError
-    var docxErr *docxupdater.DocxError
+    var docxErr *godocx.DocxError
     if errors.As(err, &docxErr) {
         statusCode := getStatusCodeForError(docxErr.Code)
         return c.Status(statusCode).JSON(ErrorResponse{
@@ -1604,15 +1579,15 @@ func handleError(c *fiber.Ctx, err error) error {
     })
 }
 
-func getStatusCodeForError(code docxupdater.ErrorCode) int {
+func getStatusCodeForError(code godocx.ErrorCode) int {
     switch code {
-    case docxupdater.ErrCodeChartNotFound,
-         docxupdater.ErrCodeTextNotFound,
-         docxupdater.ErrCodeFileNotFound:
+    case godocx.ErrCodeChartNotFound,
+         godocx.ErrCodeTextNotFound,
+         godocx.ErrCodeFileNotFound:
         return 404
-    case docxupdater.ErrCodeValidation,
-         docxupdater.ErrCodeInvalidChartData,
-         docxupdater.ErrCodeInvalidRegex:
+    case godocx.ErrCodeValidation,
+         godocx.ErrCodeInvalidChartData,
+         godocx.ErrCodeInvalidRegex:
         return 400
     default:
         return 500

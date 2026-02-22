@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"archive/zip"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func TestInsertBasicChart(t *testing.T) {
@@ -19,18 +19,18 @@ func TestInsertBasicChart(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Create a basic column chart
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Sales Report",
 		Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Revenue", Values: []float64{100, 150, 120, 180}},
 			{Name: "Profit", Values: []float64{20, 30, 25, 40}},
 		},
@@ -65,9 +65,10 @@ func TestInsertBasicChart(t *testing.T) {
 	}
 
 	// Verify chart was created
-	chartXML := readZipEntry(t, outputPath, chartFile)
+	chartXML, chartFile := findChartXMLContaining(t, outputPath, "Sales Report")
 	t.Logf("Chart XML length: %d", len(chartXML))
 	t.Logf("Chart XML (first 1000 chars): %s", chartXML[:min(1000, len(chartXML))])
+	t.Logf("Verified chart file: %s", chartFile)
 	if !strings.Contains(chartXML, "Sales Report") {
 		t.Error("Chart title not found in chart XML")
 	}
@@ -103,19 +104,19 @@ func TestInsertChartWithAxisTitles(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:          docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:          godocx.PositionEnd,
 		Title:             "Performance Metrics",
 		CategoryAxisTitle: "Time Period",
 		ValueAxisTitle:    "Value (USD)",
 		Categories:        []string{"Jan", "Feb", "Mar"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Sales", Values: []float64{1000, 1200, 1500}},
 		},
 		ShowLegend: true,
@@ -128,7 +129,7 @@ func TestInsertChartWithAxisTitles(t *testing.T) {
 		t.Fatalf("Save failed: %v", err)
 	}
 
-	chartXML := readZipEntry(t, outputPath, "word/charts/chart1.xml")
+	chartXML, _ := findChartXMLContaining(t, outputPath, "Performance Metrics")
 	if !strings.Contains(chartXML, "Time Period") {
 		t.Error("Category axis title not found")
 	}
@@ -146,18 +147,18 @@ func TestInsertMultipleCharts(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert first chart
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Chart 1",
 		Categories: []string{"A", "B"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Series1", Values: []float64{10, 20}},
 		},
 		ShowLegend: true,
@@ -167,11 +168,11 @@ func TestInsertMultipleCharts(t *testing.T) {
 	}
 
 	// Insert second chart
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Chart 2",
 		Categories: []string{"X", "Y"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Series2", Values: []float64{30, 40}},
 		},
 		ShowLegend: true,
@@ -184,13 +185,13 @@ func TestInsertMultipleCharts(t *testing.T) {
 		t.Fatalf("Save failed: %v", err)
 	}
 
-	// Verify both charts exist
-	chart1XML := readZipEntry(t, outputPath, "word/charts/chart1.xml")
+	// Verify both chart titles exist in chart files
+	chart1XML, _ := findChartXMLContaining(t, outputPath, "Chart 1")
 	if !strings.Contains(chart1XML, "Chart 1") {
 		t.Error("Chart 1 not found")
 	}
 
-	chart2XML := readZipEntry(t, outputPath, "word/charts/chart2.xml")
+	chart2XML, _ := findChartXMLContaining(t, outputPath, "Chart 2")
 	if !strings.Contains(chart2XML, "Chart 2") {
 		t.Error("Chart 2 not found")
 	}
@@ -204,17 +205,17 @@ func TestInsertChartInvalidData(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Test empty categories
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Categories: []string{},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Test", Values: []float64{}},
 		},
 	})
@@ -223,20 +224,20 @@ func TestInsertChartInvalidData(t *testing.T) {
 	}
 
 	// Test empty series
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Categories: []string{"A", "B"},
-		Series:     []docxupdater.SeriesData{},
+		Series:     []godocx.SeriesData{},
 	})
 	if err == nil {
 		t.Error("Expected error for empty series")
 	}
 
 	// Test mismatched values length
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Categories: []string{"A", "B", "C"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Test", Values: []float64{1, 2}}, // Only 2 values, but 3 categories
 		},
 	})
@@ -254,19 +255,19 @@ func TestInsertChartMultipleSeries(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:          docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:          godocx.PositionEnd,
 		Title:             "Sales vs Costs",
 		CategoryAxisTitle: "Month",
 		ValueAxisTitle:    "Amount",
 		Categories:        []string{"Jan", "Feb", "Mar", "Apr"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Revenue", Values: []float64{1000, 1200, 1100, 1300}},
 			{Name: "Costs", Values: []float64{600, 700, 650, 750}},
 			{Name: "Profit", Values: []float64{400, 500, 450, 550}},
@@ -281,7 +282,7 @@ func TestInsertChartMultipleSeries(t *testing.T) {
 		t.Fatalf("Save failed: %v", err)
 	}
 
-	chartXML := readZipEntry(t, outputPath, "word/charts/chart1.xml")
+	chartXML, _ := findChartXMLContaining(t, outputPath, "Sales vs Costs")
 	if !strings.Contains(chartXML, "Revenue") {
 		t.Error("Revenue series not found")
 	}
@@ -302,17 +303,17 @@ func TestInsertChartNoLegend(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionEnd,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionEnd,
 		Title:      "Chart Without Legend",
 		Categories: []string{"A", "B"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Data", Values: []float64{10, 20}},
 		},
 		ShowLegend: false,
@@ -325,7 +326,7 @@ func TestInsertChartNoLegend(t *testing.T) {
 		t.Fatalf("Save failed: %v", err)
 	}
 
-	chartXML := readZipEntry(t, outputPath, "word/charts/chart1.xml")
+	chartXML, _ := findChartXMLContaining(t, outputPath, "Chart Without Legend")
 	// Legend should not be present when ShowLegend is false
 	if strings.Contains(chartXML, "<c:legend>") {
 		t.Error("Legend found when ShowLegend is false")
@@ -341,23 +342,23 @@ func TestInsertChartAtBeginning(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add some text first
-	if err := u.AddText("This is after the chart", docxupdater.PositionEnd); err != nil {
+	if err := u.AddText("This is after the chart", godocx.PositionEnd); err != nil {
 		t.Fatalf("AddText failed: %v", err)
 	}
 
 	// Insert chart at beginning
-	err = u.InsertChart(docxupdater.ChartOptions{
-		Position:   docxupdater.PositionBeginning,
+	err = u.InsertChart(godocx.ChartOptions{
+		Position:   godocx.PositionBeginning,
 		Title:      "First Chart",
 		Categories: []string{"A", "B"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Data", Values: []float64{5, 10}},
 		},
 		ShowLegend: true,
@@ -371,10 +372,32 @@ func TestInsertChartAtBeginning(t *testing.T) {
 	}
 
 	// Verify chart exists
-	chartXML := readZipEntry(t, outputPath, "word/charts/chart1.xml")
+	chartXML, _ := findChartXMLContaining(t, outputPath, "First Chart")
 	if !strings.Contains(chartXML, "First Chart") {
 		t.Error("Chart not found")
 	}
+}
+
+func findChartXMLContaining(t *testing.T, docxPath string, needle string) (string, string) {
+	t.Helper()
+
+	entries := listZipEntries(t, docxPath)
+	for _, entry := range entries {
+		if !strings.HasPrefix(entry, "word/charts/chart") || !strings.HasSuffix(entry, ".xml") {
+			continue
+		}
+		if strings.Contains(entry, ".rels") {
+			continue
+		}
+
+		xml := readZipEntry(t, docxPath, entry)
+		if strings.Contains(xml, needle) {
+			return xml, entry
+		}
+	}
+
+	t.Fatalf("no chart xml contains %q", needle)
+	return "", ""
 }
 
 // Helper function to list all entries in a zip file

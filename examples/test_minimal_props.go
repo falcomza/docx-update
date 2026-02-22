@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	updater "github.com/falcomza/docx-update"
+	updater "github.com/falcomza/go-docx"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 // TestTemplateIntegration tests all new features using the real docx_template.docx
@@ -27,7 +27,7 @@ func TestTemplateIntegration(t *testing.T) {
 	}
 
 	// Open template
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
@@ -57,7 +57,7 @@ func TestTemplateIntegration(t *testing.T) {
 
 	// Test 3: Text Replacement - Replace placeholders
 	t.Log("Testing text replacement...")
-	replaceOpts := docxupdater.DefaultReplaceOptions()
+	replaceOpts := godocx.DefaultReplaceOptions()
 	replaceOpts.MatchCase = false
 
 	// Replace any date patterns (example)
@@ -78,11 +78,11 @@ func TestTemplateIntegration(t *testing.T) {
 
 	// Test 5: Insert Hyperlink
 	t.Log("Testing hyperlink insertion...")
-	hyperlinkOpts := docxupdater.DefaultHyperlinkOptions()
-	hyperlinkOpts.Position = docxupdater.PositionEnd
+	hyperlinkOpts := godocx.DefaultHyperlinkOptions()
+	hyperlinkOpts.Position = godocx.PositionEnd
 	hyperlinkOpts.Tooltip = "Visit our website for more information"
 
-	err = u.InsertHyperlink("Click here for more info", "https://github.com/falcomza/docx-update", hyperlinkOpts)
+	err = u.InsertHyperlink("Click here for more info", "https://github.com/falcomza/go-docx", hyperlinkOpts)
 	if err != nil {
 		t.Fatalf("Failed to insert hyperlink: %v", err)
 	}
@@ -90,12 +90,12 @@ func TestTemplateIntegration(t *testing.T) {
 
 	// Test 6: Set Header
 	t.Log("Testing header creation...")
-	headerContent := docxupdater.HeaderFooterContent{
+	headerContent := godocx.HeaderFooterContent{
 		LeftText:   "DOCX-Update Library",
 		CenterText: "Integration Test Document",
 		RightText:  "February 2026",
 	}
-	headerOpts := docxupdater.DefaultHeaderOptions()
+	headerOpts := godocx.DefaultHeaderOptions()
 
 	err = u.SetHeader(headerContent, headerOpts)
 	if err != nil {
@@ -105,14 +105,14 @@ func TestTemplateIntegration(t *testing.T) {
 
 	// Test 7: Set Footer with Page Numbers
 	t.Log("Testing footer creation...")
-	footerContent := docxupdater.HeaderFooterContent{
+	footerContent := godocx.HeaderFooterContent{
 		LeftText:         "Confidential",
 		CenterText:       "Page ",
 		PageNumber:       true,
 		PageNumberFormat: "X of Y",
 		RightText:        "Generated: 2026-02-16",
 	}
-	footerOpts := docxupdater.DefaultFooterOptions()
+	footerOpts := godocx.DefaultFooterOptions()
 
 	err = u.SetFooter(footerContent, footerOpts)
 	if err != nil {
@@ -150,13 +150,13 @@ func TestTemplateReplaceMultiple(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
-	opts := docxupdater.DefaultReplaceOptions()
+	opts := godocx.DefaultReplaceOptions()
 	opts.MatchCase = false
 
 	// Perform multiple replacements
@@ -191,14 +191,14 @@ func TestTemplateFindAll(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Find all numbers
-	opts := docxupdater.DefaultFindOptions()
+	opts := godocx.DefaultFindOptions()
 	opts.UseRegex = true
 
 	matches, err := u.FindText(`\d+`, opts)
@@ -228,7 +228,7 @@ func TestTemplateExtractTables(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
@@ -259,26 +259,26 @@ func TestTemplateErrorHandling(t *testing.T) {
 		t.Skipf("Template file not found: %s", templatePath)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Test invalid hyperlink URL
-	err = u.InsertHyperlink("Bad Link", "not-a-valid-url", docxupdater.DefaultHyperlinkOptions())
+	err = u.InsertHyperlink("Bad Link", "not-a-valid-url", godocx.DefaultHyperlinkOptions())
 	if err == nil {
 		t.Error("Expected error for invalid URL, got nil")
 	}
 
 	// Check it's a DocxError
-	docxErr, ok := err.(*docxupdater.DocxError)
+	docxErr, ok := err.(*godocx.DocxError)
 	if !ok {
 		t.Errorf("Expected DocxError type, got %T", err)
 	} else {
 		t.Logf("Correctly returned DocxError with code: %s", docxErr.Code)
-		if docxErr.Code != docxupdater.ErrCodeInvalidURL {
-			t.Errorf("Expected error code %s, got %s", docxupdater.ErrCodeInvalidURL, docxErr.Code)
+		if docxErr.Code != godocx.ErrCodeInvalidURL {
+			t.Errorf("Expected error code %s, got %s", godocx.ErrCodeInvalidURL, docxErr.Code)
 		}
 	}
 }
@@ -298,7 +298,7 @@ func TestTemplateCompleteWorkflow(t *testing.T) {
 	}
 
 	t.Log("Step 1: Opening template...")
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
@@ -312,7 +312,7 @@ func TestTemplateCompleteWorkflow(t *testing.T) {
 	t.Logf("  Document has %d characters", len(text))
 
 	t.Log("Step 3: Performing content replacements...")
-	opts := docxupdater.DefaultReplaceOptions()
+	opts := godocx.DefaultReplaceOptions()
 	opts.MatchCase = false
 
 	// Replace company name
@@ -326,30 +326,30 @@ func TestTemplateCompleteWorkflow(t *testing.T) {
 	t.Logf("  Made %d content replacements", count1+count2+count3)
 
 	t.Log("Step 4: Adding professional header...")
-	headerContent := docxupdater.HeaderFooterContent{
+	headerContent := godocx.HeaderFooterContent{
 		LeftText:   "TechVenture Inc",
 		CenterText: "Annual Report 2026",
 		RightText:  "CONFIDENTIAL",
 	}
-	if err := u.SetHeader(headerContent, docxupdater.DefaultHeaderOptions()); err != nil {
+	if err := u.SetHeader(headerContent, godocx.DefaultHeaderOptions()); err != nil {
 		t.Fatalf("Failed to set header: %v", err)
 	}
 
 	t.Log("Step 5: Adding footer with page numbers...")
-	footerContent := docxupdater.HeaderFooterContent{
+	footerContent := godocx.HeaderFooterContent{
 		LeftText:         "© 2026 TechVenture Inc",
 		CenterText:       "Page ",
 		PageNumber:       true,
 		PageNumberFormat: "X of Y",
 		RightText:        "www.techventure.com",
 	}
-	if err := u.SetFooter(footerContent, docxupdater.DefaultFooterOptions()); err != nil {
+	if err := u.SetFooter(footerContent, godocx.DefaultFooterOptions()); err != nil {
 		t.Fatalf("Failed to set footer: %v", err)
 	}
 
 	t.Log("Step 6: Adding hyperlinks...")
-	linkOpts := docxupdater.DefaultHyperlinkOptions()
-	linkOpts.Position = docxupdater.PositionEnd
+	linkOpts := godocx.DefaultHyperlinkOptions()
+	linkOpts.Position = godocx.PositionEnd
 	linkOpts.Color = "0563C1" // Standard hyperlink blue
 
 	if err := u.InsertHyperlink("Visit our website", "https://techventure.com", linkOpts); err != nil {
@@ -391,7 +391,7 @@ func TestTemplateWithProperties(t *testing.T) {
 	}
 
 	t.Log("Opening template and setting properties...")
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
@@ -399,7 +399,7 @@ func TestTemplateWithProperties(t *testing.T) {
 
 	// Set core properties
 	t.Log("Setting core properties...")
-	coreProps := docxupdater.CoreProperties{
+	coreProps := godocx.CoreProperties{
 		Title:          "Financial Analysis Report",
 		Subject:        "Q4 2026 Analysis",
 		Creator:        "Finance Team",
@@ -415,7 +415,7 @@ func TestTemplateWithProperties(t *testing.T) {
 
 	// Set app properties
 	t.Log("Setting app properties...")
-	appProps := docxupdater.AppProperties{
+	appProps := godocx.AppProperties{
 		Company:     "TechVenture Inc",
 		Manager:     "Sarah Williams",
 		Application: "Microsoft Word",
@@ -427,7 +427,7 @@ func TestTemplateWithProperties(t *testing.T) {
 
 	// Set custom properties
 	t.Log("Setting custom properties...")
-	customProps := []docxupdater.CustomProperty{
+	customProps := []godocx.CustomProperty{
 		{Name: "Department", Value: "Finance", Type: "lpwstr"},
 		{Name: "FiscalYear", Value: 2026, Type: "i4"},
 		{Name: "Quarter", Value: "Q4"},

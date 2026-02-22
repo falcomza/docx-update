@@ -4,7 +4,7 @@
 
 **Version**: 1.0.0
 **Go Version**: 1.25.7+
-**Import Path**: `github.com/falcomza/docx-update`
+**Import Path**: `github.com/falcomza/go-docx`
 
 ---
 
@@ -28,7 +28,7 @@
 The DOCX Chart Updater is a Go library for programmatically manipulating Microsoft Word (DOCX) documents. It operates directly on the OpenXML format, enabling:
 
 - **Chart Updates**: Modify chart data, categories, series, and titles
-- **Chart Duplication**: Copy existing charts with embedded workbooks
+- **Chart Creation**: Insert new charts with embedded workbooks
 - **Table Operations**: Insert styled tables with captions
 - **Image Insertion**: Add images with proportional scaling and captions
 - **Text Operations**: Insert paragraphs, find/replace text, read content
@@ -40,7 +40,7 @@ The DOCX Chart Updater is a Go library for programmatically manipulating Microso
 | Category | Methods |
 |----------|---------|
 | **Lifecycle** | `New()`, `Save()`, `Cleanup()`, `TempDir()` |
-| **Charts** | `UpdateChart()`, `CopyChart()`, `InsertChart()` |
+| **Charts** | `UpdateChart()`, `InsertChart()` |
 | **Tables** | `InsertTable()` |
 | **Images** | `InsertImage()` |
 | **Paragraphs** | `InsertParagraph()`, `InsertParagraphs()`, `AddHeading()`, `AddText()` |
@@ -64,13 +64,13 @@ The DOCX Chart Updater is a Go library for programmatically manipulating Microso
 ## Installation
 
 ```bash
-go get github.com/falcomza/docx-update@latest
+go get github.com/falcomza/go-docx@latest
 ```
 
 ### Import
 
 ```go
-import docxupdater "github.com/falcomza/docx-update"
+import godocx "github.com/falcomza/go-docx"
 ```
 
 ---
@@ -84,21 +84,21 @@ package main
 
 import (
     "log"
-    docxupdater "github.com/falcomza/docx-update"
+    godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
     // Create updater instance
-    updater, err := docxupdater.New("template.docx")
+    updater, err := godocx.New("template.docx")
     if err != nil {
         log.Fatal(err)
     }
     defer updater.Cleanup()
 
     // Update first chart (1-based index)
-    data := docxupdater.ChartData{
+    data := godocx.ChartData{
         Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-        Series: []docxupdater.SeriesData{
+        Series: []godocx.SeriesData{
             {Name: "Revenue", Values: []float64{1000, 1500, 1200, 1800}},
             {Name: "Expenses", Values: []float64{800, 900, 850, 1000}},
         },
@@ -126,7 +126,7 @@ func main() {
 
 ```go
 // 1. Create - Opens DOCX, extracts to temp directory
-updater, err := docxupdater.New("input.docx")
+updater, err := godocx.New("input.docx")
 
 // 2. Modify - Perform operations on the document
 updater.UpdateChart(1, data)
@@ -182,7 +182,7 @@ Creates a new updater by extracting the DOCX to a temporary directory.
 
 **Example:**
 ```go
-updater, err := docxupdater.New("./templates/report.docx")
+updater, err := godocx.New("./templates/report.docx")
 if err != nil {
     return fmt.Errorf("failed to open document: %w", err)
 }
@@ -207,44 +207,15 @@ Updates chart data and embedded Excel workbook for a specific chart.
 
 **Example:**
 ```go
-data := docxupdater.ChartData{
+data := godocx.ChartData{
     Categories: []string{"Jan", "Feb", "Mar"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {Name: "Sales", Values: []float64{100, 200, 150}},
     },
 }
 if err := updater.UpdateChart(1, data); err != nil {
     return err
 }
-```
-
-#### `CopyChart(sourceChartIndex int, afterText string) (int, error)`
-
-Duplicates an existing chart with its embedded workbook.
-
-**Parameters:**
-- `sourceChartIndex`: 1-based index of the chart to copy
-- `afterText`: **Ignored** (kept for backward compatibility)
-
-**Returns:**
-- `int`: The new chart's 1-based index
-- `error`: Chart not found, relationship errors
-
-**Behavior:**
-- Copies chart XML file
-- Copies embedded workbook with new index
-- Updates chart relationships
-- Inserts drawing after source chart in document
-- Registers content type override
-
-**Example:**
-```go
-newIndex, err := updater.CopyChart(1, "")
-if err != nil {
-    return err
-}
-// Now update the copied chart independently
-updater.UpdateChart(newIndex, newData)
 ```
 
 #### `Save(outputPath string) error`
@@ -267,7 +238,7 @@ Removes the temporary workspace. **Always call with `defer`**.
 
 **Example:**
 ```go
-updater, err := docxupdater.New("input.docx")
+updater, err := godocx.New("input.docx")
 if err != nil {
     return err
 }
@@ -303,10 +274,10 @@ type ParagraphOptions struct {
 
 **Example:**
 ```go
-updater.InsertParagraph(docxupdater.ParagraphOptions{
+updater.InsertParagraph(godocx.ParagraphOptions{
     Text:     "Executive Summary",
-    Style:    docxupdater.StyleHeading1,
-    Position: docxupdater.PositionBeginning,
+    Style:    godocx.StyleHeading1,
+    Position: godocx.PositionBeginning,
 })
 ```
 
@@ -376,8 +347,8 @@ type TableOptions struct {
 
 **Example:**
 ```go
-updater.InsertTable(docxupdater.TableOptions{
-    Columns: []docxupdater.ColumnDefinition{
+updater.InsertTable(godocx.TableOptions{
+    Columns: []godocx.ColumnDefinition{
         {Title: "Metric", Width: 2000},
         {Title: "Value", Width: 1000},
     },
@@ -385,11 +356,11 @@ updater.InsertTable(docxupdater.TableOptions{
         {"Revenue", "$1.2M"},
         {"Growth", "+15%"},
     },
-    TableStyle:       docxupdater.TableStyleProfessional,
+    TableStyle:       godocx.TableStyleProfessional,
     HeaderBackground: "4472C4",
     HeaderBold:       true,
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionTable,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionTable,
         Description: "Key performance indicators",
         AutoNumber:  true,
     },
@@ -425,13 +396,13 @@ type ImageOptions struct {
 
 **Example:**
 ```go
-updater.InsertImage(docxupdater.ImageOptions{
+updater.InsertImage(godocx.ImageOptions{
     Path:     "./assets/logo.png",
     Width:    300,
     AltText:  "Company Logo",
-    Position: docxupdater.PositionBeginning,
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionFigure,
+    Position: godocx.PositionBeginning,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionFigure,
         Description: "Company branding",
         AutoNumber:  true,
     },
@@ -471,7 +442,7 @@ type TextMatch struct {
 
 **Example:**
 ```go
-matches, err := updater.FindText("[TODO]", docxupdater.FindOptions{
+matches, err := updater.FindText("[TODO]", godocx.FindOptions{
     UseRegex:     true,
     InParagraphs: true,
     MaxResults:   10,
@@ -537,8 +508,8 @@ type HyperlinkOptions struct {
 
 **Example:**
 ```go
-updater.InsertHyperlink("Visit our website", "https://example.com", docxupdater.HyperlinkOptions{
-    Position:  docxupdater.PositionAfterText,
+updater.InsertHyperlink("Visit our website", "https://example.com", godocx.HyperlinkOptions{
+    Position:  godocx.PositionAfterText,
     Anchor:    "Contact Us",
     Color:     "0563C1",
     Underline: true,
@@ -580,14 +551,14 @@ type HeaderOptions struct {
 
 **Example:**
 ```go
-updater.SetHeader(docxupdater.HeaderFooterContent{
+updater.SetHeader(godocx.HeaderFooterContent{
     LeftText:   "Confidential Report",
     CenterText: "Q4 2024",
     RightText:  "Acme Corp",
     PageNumber: true,
     PageNumberFormat: "Page X of Y",
-}, docxupdater.HeaderOptions{
-    Type: docxupdater.HeaderDefault,
+}, godocx.HeaderOptions{
+    Type: godocx.HeaderDefault,
 })
 ```
 
@@ -602,10 +573,10 @@ Sets or creates a document footer.
 
 **Example:**
 ```go
-updater.SetFooter(docxupdater.HeaderFooterContent{
+updater.SetFooter(godocx.HeaderFooterContent{
     CenterText: "Confidential - Do Not Distribute",
     PageNumber: true,
-}, docxupdater.DefaultFooterOptions())
+}, godocx.DefaultFooterOptions())
 ```
 
 ### Document Properties Operations
@@ -632,7 +603,7 @@ type CoreProperties struct {
 
 **Example:**
 ```go
-updater.SetCoreProperties(docxupdater.CoreProperties{
+updater.SetCoreProperties(godocx.CoreProperties{
     Title:       "Quarterly Financial Report",
     Subject:     "Q4 2024 Financials",
     Creator:     "John Doe",
@@ -658,7 +629,7 @@ type AppProperties struct {
 
 **Example:**
 ```go
-updater.SetAppProperties(docxupdater.AppProperties{
+updater.SetAppProperties(godocx.AppProperties{
     Company:     "Acme Corporation",
     Manager:     "Jane Smith",
     Application: "Microsoft Word",
@@ -688,7 +659,7 @@ type CustomProperty struct {
 
 **Example:**
 ```go
-updater.SetCustomProperties([]docxupdater.CustomProperty{
+updater.SetCustomProperties([]godocx.CustomProperty{
     {Name: "ProjectCode", Value: "PRJ-2024-001"},
     {Name: "Budget", Value: 150000.50},
     {Name: "Approved", Value: true},
@@ -733,14 +704,14 @@ type BookmarkOptions struct {
 **Example:**
 ```go
 // Create bookmark at document end
-updater.CreateBookmark("section-start", docxupdater.BookmarkOptions{
-    Position: docxupdater.PositionEnd,
+updater.CreateBookmark("section-start", godocx.BookmarkOptions{
+    Position: godocx.PositionEnd,
     Hidden:   true,
 })
 
 // Create bookmark after specific text
-updater.CreateBookmark("summary-section", docxupdater.BookmarkOptions{
-    Position: docxupdater.PositionAfterText,
+updater.CreateBookmark("summary-section", godocx.BookmarkOptions{
+    Position: godocx.PositionAfterText,
     Anchor:   "Executive Summary",
 })
 ```
@@ -751,10 +722,10 @@ Creates a bookmark that wraps specific text content.
 
 **Example:**
 ```go
-updater.CreateBookmarkWithText("important-note", "Critical Information", docxupdater.BookmarkOptions{
-    Position: docxupdater.PositionAfterText,
+updater.CreateBookmarkWithText("important-note", "Critical Information", godocx.BookmarkOptions{
+    Position: godocx.PositionAfterText,
     Anchor:   "Introduction",
-    Style:    docxupdater.StyleHeading2,
+    Style:    godocx.StyleHeading2,
 })
 ```
 
@@ -815,19 +786,19 @@ const (
 
 **Example:**
 ```go
-updater.InsertChart(docxupdater.ChartOptions{
-    Position:  docxupdater.PositionEnd,
-    ChartKind: docxupdater.ChartKindColumn,
+updater.InsertChart(godocx.ChartOptions{
+    Position:  godocx.PositionEnd,
+    ChartKind: godocx.ChartKindColumn,
     Title:     "Sales Performance",
     Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {Name: "2023", Values: []float64{100, 150, 120, 180}},
         {Name: "2024", Values: []float64{120, 170, 140, 200}},
     },
     ShowLegend:     true,
     LegendPosition: "r", // Right side
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionFigure,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionFigure,
         Description: "Quarterly sales comparison",
         AutoNumber:  true,
     },
@@ -851,7 +822,7 @@ package main
 
 import (
     "github.com/gofiber/fiber/v2"
-    docxupdater "github.com/falcomza/docx-update"
+    godocx "github.com/falcomza/go-docx"
 )
 
 type UpdateChartRequest struct {
@@ -890,7 +861,7 @@ func UpdateChartHandler(c *fiber.Ctx) error {
     defer os.Remove(tempPath)
 
     // Process document
-    updater, err := docxupdater.New(tempPath)
+    updater, err := godocx.New(tempPath)
     if err != nil {
         return c.Status(500).JSON(fiber.Map{
             "error": "Failed to process document",
@@ -962,7 +933,7 @@ func ErrorHandler() fiber.Handler {
 
         if err != nil {
             // Check for DocxError types
-            var docxErr *docxupdater.DocxError
+            var docxErr *godocx.DocxError
             if errors.As(err, &docxErr) {
                 return c.Status(400).JSON(fiber.Map{
                     "code":    string(docxErr.Code),
@@ -998,7 +969,7 @@ var jobQueue = make(chan DocxJob, 100)
 
 func ProcessJobsWorker() {
     for job := range jobQueue {
-        updater, err := docxupdater.New(job.Template)
+        updater, err := godocx.New(job.Template)
         if err != nil {
             job.Status = "failed"
             continue
@@ -1078,12 +1049,12 @@ type DocxError struct {
 **Type Assertion for Specific Errors:**
 ```go
 if err := updater.UpdateChart(1, data); err != nil {
-    var docxErr *docxupdater.DocxError
+    var docxErr *godocx.DocxError
     if errors.As(err, &docxErr) {
         switch docxErr.Code {
-        case docxupdater.ErrCodeChartNotFound:
+        case godocx.ErrCodeChartNotFound:
             return fmt.Errorf("chart %d does not exist", chartIndex)
-        case docxupdater.ErrCodeInvalidChartData:
+        case godocx.ErrCodeInvalidChartData:
             return fmt.Errorf("data validation failed: %s", docxErr.Message)
         default:
             return err
@@ -1095,7 +1066,7 @@ if err := updater.UpdateChart(1, data); err != nil {
 
 **Context Extraction:**
 ```go
-if docxErr, ok := err.(*docxupdater.DocxError); ok {
+if docxErr, ok := err.(*godocx.DocxError); ok {
     if idx, exists := docxErr.Context["index"]; exists {
         log.Printf("Chart index: %v", idx)
     }
@@ -1116,7 +1087,7 @@ if err := updater.Save(outputPath); err != nil {
 ### 1. Always Defer Cleanup
 
 ```go
-updater, err := docxupdater.New("template.docx")
+updater, err := godocx.New("template.docx")
 if err != nil {
     return err
 }
@@ -1127,11 +1098,11 @@ defer updater.Cleanup() // Guaranteed cleanup
 
 ```go
 if len(data.Categories) == 0 {
-    return docxupdater.NewInvalidChartDataError("categories required")
+    return godocx.NewInvalidChartDataError("categories required")
 }
 for i, series := range data.Series {
     if len(series.Values) != len(data.Categories) {
-        return docxupdater.NewInvalidChartDataError(
+        return godocx.NewInvalidChartDataError(
             fmt.Sprintf("series %d length mismatch", i))
     }
 }
@@ -1155,7 +1126,7 @@ for _, template := range templates {
     wg.Add(1)
     go func(t string) {
         defer wg.Done()
-        u, _ := docxupdater.New(t)
+        u, _ := godocx.New(t)
         defer u.Cleanup()
         // Process...
     }(template)
@@ -1173,7 +1144,7 @@ if err := copyFile(templatePath, templateCopy); err != nil {
 }
 defer os.Remove(templateCopy)
 
-updater, err := docxupdater.New(templateCopy)
+updater, err := godocx.New(templateCopy)
 ```
 
 ### 6. Set Reasonable Timeouts
@@ -1215,7 +1186,7 @@ case <-ctx.Done():
 
 ```go
 // Batch operations to minimize file I/O
-func ProcessDocumentBatch(updater *docxupdater.Updater, ops []Operation) error {
+func ProcessDocumentBatch(updater *godocx.Updater, ops []Operation) error {
     // All modifications happen before Save()
     for _, op := range ops {
         if err := op.Apply(updater); err != nil {
@@ -1240,7 +1211,7 @@ func ProcessParallel(inputs []string) error {
         go func(path string) {
             defer func() { <-sem }() // Release
 
-            u, err := docxupdater.New(path)
+            u, err := godocx.New(path)
             if err != nil {
                 errChan <- err
                 return
@@ -1351,45 +1322,45 @@ package main
 import (
     "fmt"
     "log"
-    docxupdater "github.com/falcomza/docx-update"
+    godocx "github.com/falcomza/go-docx"
 )
 
 func GenerateReport(templatePath, outputPath string, data ReportData) error {
     // Initialize updater
-    updater, err := docxupdater.New(templatePath)
+    updater, err := godocx.New(templatePath)
     if err != nil {
         return fmt.Errorf("failed to load template: %w", err)
     }
     defer updater.Cleanup()
 
     // Replace placeholders
-    updater.ReplaceText("{{COMPANY_NAME}}", data.Company, docxupdater.DefaultReplaceOptions())
-    updater.ReplaceText("{{REPORT_DATE}}", data.Date.Format("2006-01-02"), docxupdater.DefaultReplaceOptions())
+    updater.ReplaceText("{{COMPANY_NAME}}", data.Company, godocx.DefaultReplaceOptions())
+    updater.ReplaceText("{{REPORT_DATE}}", data.Date.Format("2006-01-02"), godocx.DefaultReplaceOptions())
 
     // Update executive summary chart
-    updater.UpdateChart(1, docxupdater.ChartData{
+    updater.UpdateChart(1, godocx.ChartData{
         Categories: data.Quarters,
         Series:     data.RevenueSeries,
         ChartTitle: "Revenue by Quarter",
     })
 
     // Insert KPI table
-    updater.InsertTable(docxupdater.TableOptions{
-        Columns: []docxupdater.ColumnDefinition{
+    updater.InsertTable(godocx.TableOptions{
+        Columns: []godocx.ColumnDefinition{
             {Title: "Metric", Width: 2000, Bold: true},
             {Title: "Value", Width: 1500},
             {Title: "Change", Width: 1500},
         },
         Rows: data.KPIRows,
-        HeaderStyle: docxupdater.CellStyle{
+        HeaderStyle: godocx.CellStyle{
             Bold:       true,
             FontSize:   22,
             FontColor:  "FFFFFF",
             Background: "4472C4",
         },
-        TableStyle: docxupdater.TableStyleProfessional,
-        Caption: &docxupdater.CaptionOptions{
-            Type:        docxupdater.CaptionTable,
+        TableStyle: godocx.TableStyleProfessional,
+        Caption: &godocx.CaptionOptions{
+            Type:        godocx.CaptionTable,
             Description: "Key Performance Indicators",
             AutoNumber:  true,
         },
@@ -1397,20 +1368,22 @@ func GenerateReport(templatePath, outputPath string, data ReportData) error {
 
     // Add chart for trend analysis
     if len(data.MonthlyTrends) > 0 {
-        newIndex, _ := updater.CopyChart(1, "")
-        updater.UpdateChart(newIndex, docxupdater.ChartData{
+        updater.InsertChart(godocx.ChartOptions{
+            Position:   godocx.PositionEnd,
+            ChartKind:  godocx.ChartKindColumn,
+            Title:      "Monthly Trend Analysis",
             Categories: data.Months,
             Series:     data.TrendSeries,
-            ChartTitle: "Monthly Trend Analysis",
+            ShowLegend: true,
         })
     }
 
     // Insert logo
     if data.LogoPath != "" {
-        updater.InsertImage(docxupdater.ImageOptions{
+        updater.InsertImage(godocx.ImageOptions{
             Path:     data.LogoPath,
             Width:    200,
-            Position: docxupdater.PositionBeginning,
+            Position: godocx.PositionBeginning,
         })
     }
 
@@ -1426,10 +1399,10 @@ type ReportData struct {
     Company       string
     Date          time.Time
     Quarters      []string
-    RevenueSeries []docxupdater.SeriesData
+    RevenueSeries []godocx.SeriesData
     KPIRows       [][]string
     Months        []string
-    TrendSeries   []docxupdater.SeriesData
+    TrendSeries   []godocx.SeriesData
     LogoPath      string
 }
 ```

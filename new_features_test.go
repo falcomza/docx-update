@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -7,23 +7,23 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 // Test custom error types
 func TestDocxError(t *testing.T) {
-	err := docxupdater.NewChartNotFoundError(5)
+	err := godocx.NewChartNotFoundError(5)
 	if err == nil {
 		t.Fatal("Expected error, got nil")
 	}
 
-	docxErr, ok := err.(*docxupdater.DocxError)
+	docxErr, ok := err.(*godocx.DocxError)
 	if !ok {
 		t.Fatal("Expected DocxError type")
 	}
 
-	if docxErr.Code != docxupdater.ErrCodeChartNotFound {
-		t.Errorf("Expected code %s, got %s", docxupdater.ErrCodeChartNotFound, docxErr.Code)
+	if docxErr.Code != godocx.ErrCodeChartNotFound {
+		t.Errorf("Expected code %s, got %s", godocx.ErrCodeChartNotFound, docxErr.Code)
 	}
 
 	if docxErr.Context["index"] != 5 {
@@ -43,14 +43,14 @@ func TestReplaceText(t *testing.T) {
 	}
 
 	// Open document
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Replace text
-	opts := docxupdater.DefaultReplaceOptions()
+	opts := godocx.DefaultReplaceOptions()
 	opts.MatchCase = false
 
 	count, err := u.ReplaceText("World", "Universe", opts)
@@ -68,7 +68,7 @@ func TestReplaceText(t *testing.T) {
 	}
 
 	// Verify replacement
-	u2, err := docxupdater.New(outputPath)
+	u2, err := godocx.New(outputPath)
 	if err != nil {
 		t.Fatalf("Failed to reopen document: %v", err)
 	}
@@ -99,7 +99,7 @@ func TestReplaceTextRegex(t *testing.T) {
 		t.Fatalf("Failed to create test doc: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
@@ -107,7 +107,7 @@ func TestReplaceTextRegex(t *testing.T) {
 
 	// Replace phone numbers with regex
 	pattern := regexp.MustCompile(`\d{3}-\d{3}-\d{4}`)
-	opts := docxupdater.DefaultReplaceOptions()
+	opts := godocx.DefaultReplaceOptions()
 
 	count, err := u.ReplaceTextRegex(pattern, "[REDACTED]", opts)
 	if err != nil {
@@ -133,7 +133,7 @@ func TestGetText(t *testing.T) {
 		t.Fatalf("Failed to create test doc: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
@@ -159,13 +159,13 @@ func TestFindText(t *testing.T) {
 		t.Fatalf("Failed to create test doc: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
 	defer u.Cleanup()
 
-	opts := docxupdater.DefaultFindOptions()
+	opts := godocx.DefaultFindOptions()
 	matches, err := u.FindText("TODO:", opts)
 	if err != nil {
 		t.Fatalf("Failed to find text: %v", err)
@@ -192,14 +192,14 @@ func TestInsertHyperlink(t *testing.T) {
 		t.Fatalf("Failed to create test doc: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
 	defer u.Cleanup()
 
-	opts := docxupdater.DefaultHyperlinkOptions()
-	opts.Position = docxupdater.PositionEnd
+	opts := godocx.DefaultHyperlinkOptions()
+	opts.Position = godocx.PositionEnd
 
 	err = u.InsertHyperlink("Visit Example", "https://example.com", opts)
 	if err != nil {
@@ -225,26 +225,26 @@ func TestInvalidURL(t *testing.T) {
 		t.Fatalf("Failed to create test doc: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
 	defer u.Cleanup()
 
-	opts := docxupdater.DefaultHyperlinkOptions()
+	opts := godocx.DefaultHyperlinkOptions()
 
 	err = u.InsertHyperlink("Invalid Link", "not-a-url", opts)
 	if err == nil {
 		t.Fatal("Expected error for invalid URL, got nil")
 	}
 
-	docxErr, ok := err.(*docxupdater.DocxError)
+	docxErr, ok := err.(*godocx.DocxError)
 	if !ok {
 		t.Fatal("Expected DocxError type")
 	}
 
-	if docxErr.Code != docxupdater.ErrCodeInvalidURL {
-		t.Errorf("Expected code %s, got %s", docxupdater.ErrCodeInvalidURL, docxErr.Code)
+	if docxErr.Code != godocx.ErrCodeInvalidURL {
+		t.Errorf("Expected code %s, got %s", godocx.ErrCodeInvalidURL, docxErr.Code)
 	}
 }
 
@@ -258,20 +258,20 @@ func TestSetHeader(t *testing.T) {
 		t.Fatalf("Failed to create test doc: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
 	defer u.Cleanup()
 
-	content := docxupdater.HeaderFooterContent{
+	content := godocx.HeaderFooterContent{
 		LeftText:   "Company Name",
 		CenterText: "Document Title",
 		RightText:  "Page",
 		PageNumber: true,
 	}
 
-	opts := docxupdater.DefaultHeaderOptions()
+	opts := godocx.DefaultHeaderOptions()
 
 	err = u.SetHeader(content, opts)
 	if err != nil {
@@ -299,19 +299,19 @@ func TestSetFooter(t *testing.T) {
 		t.Fatalf("Failed to create test doc: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("Failed to open document: %v", err)
 	}
 	defer u.Cleanup()
 
-	content := docxupdater.HeaderFooterContent{
+	content := godocx.HeaderFooterContent{
 		CenterText:       "Page ",
 		PageNumber:       true,
 		PageNumberFormat: "X of Y",
 	}
 
-	opts := docxupdater.DefaultFooterOptions()
+	opts := godocx.DefaultFooterOptions()
 
 	err = u.SetFooter(content, opts)
 	if err != nil {
@@ -338,16 +338,16 @@ func fileExists(path string) bool {
 // Helper to create a minimal DOCX with test text
 func createMinimalDoc(path, text string) error {
 	// Use the existing test helper from other tests
-	u, err := docxupdater.New("templates/docx_template.docx")
+	u, err := godocx.New("templates/docx_template.docx")
 	if err != nil {
 		return err
 	}
 	defer u.Cleanup()
 
 	// Insert test text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     text,
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		return err

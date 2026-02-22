@@ -60,9 +60,9 @@ New `TABLE_AUTO_SIZING.md` comprehensive guide covering:
 ### Standard Usage (Automatic)
 ```go
 // Uses default available width (9360 twips)
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Name"},
         {Title: "Email"},
         {Title: "Phone"},
@@ -79,9 +79,9 @@ err := u.InsertTable(docxupdater.TableOptions{
 ```go
 // For custom margins, specify available width
 // Narrow margins (0.5"): 12240 - 720 - 720 = 10800
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Col 1"},
         {Title: "Col 2"},
         {Title: "Col 3"},
@@ -99,9 +99,9 @@ err := u.InsertTable(docxupdater.TableOptions{
 ```go
 // 50% width table with 2 columns
 // Column width: (9360 × 2500) / 5000 / 2 = 2340 twips each
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "A"},
         {Title: "B"},
     },
@@ -109,7 +109,7 @@ err := u.InsertTable(docxupdater.TableOptions{
         {"1", "2"},
     },
     HeaderBold:     true,
-    TableWidthType: docxupdater.TableWidthPercentage,
+    TableWidthType: godocx.TableWidthPercentage,
     TableWidth:     2500, // 50%
 })
 ```

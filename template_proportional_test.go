@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 // TestProportionalTableWithTemplate demonstrates inserting a proportional-width table
@@ -20,16 +20,16 @@ func TestProportionalTableWithTemplate(t *testing.T) {
 	outputPath := filepath.Join("outputs", "template_proportional_table.docx")
 
 	// Open the template
-	updater, err := docxupdater.New(templatePath)
+	updater, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer updater.Cleanup()
 
 	// Insert a table with proportional column widths
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Product ID"},
 			{Title: "Product Description"},
 			{Title: "Unit Price"},
@@ -42,7 +42,7 @@ func TestProportionalTableWithTemplate(t *testing.T) {
 		},
 		ProportionalColumnWidths: true,
 		TableWidth:               5000, // 100%
-		TableWidthType:           docxupdater.TableWidthPercentage,
+		TableWidthType:           godocx.TableWidthPercentage,
 		HeaderBold:               true,
 		HeaderBackground:         "4472C4",
 		AlternateRowColor:        "F2F2F2",
@@ -96,16 +96,16 @@ func TestTableWithTemplateFixedWidth(t *testing.T) {
 
 	outputPath := filepath.Join("outputs", "template_fixed_proportional_table.docx")
 
-	updater, err := docxupdater.New(templatePath)
+	updater, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer updater.Cleanup()
 
 	// Insert table with fixed width and proportional columns
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Category"},
 			{Title: "Extended Description Here"},
 			{Title: "Status"},
@@ -116,10 +116,10 @@ func TestTableWithTemplateFixedWidth(t *testing.T) {
 		},
 		ProportionalColumnWidths: true,
 		TableWidth:               8640, // 6 inches
-		TableWidthType:           docxupdater.TableWidthFixed,
+		TableWidthType:           godocx.TableWidthFixed,
 		HeaderBold:               true,
-		HeaderAlignment:          docxupdater.CellAlignCenter,
-		TableAlignment:           docxupdater.AlignCenter,
+		HeaderAlignment:          godocx.CellAlignCenter,
+		TableAlignment:           godocx.AlignCenter,
 	})
 	if err != nil {
 		t.Fatalf("InsertTable failed: %v", err)
@@ -157,15 +157,15 @@ func TestComparisonEqualVsProportionalOnTemplate(t *testing.T) {
 
 	// Test 1: Equal width (default)
 	outputEqualPath := filepath.Join("outputs", "template_equal_width_table.docx")
-	updater1, err := docxupdater.New(templatePath)
+	updater1, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template for equal test: %v", err)
 	}
 	defer updater1.Cleanup()
 
-	err = updater1.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = updater1.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "A"},
 			{Title: "B"},
 			{Title: "C"},
@@ -185,15 +185,15 @@ func TestComparisonEqualVsProportionalOnTemplate(t *testing.T) {
 
 	// Test 2: Proportional width
 	outputPropPath := filepath.Join("outputs", "template_proportional_width_table.docx")
-	updater2, err := docxupdater.New(templatePath)
+	updater2, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template for proportional test: %v", err)
 	}
 	defer updater2.Cleanup()
 
-	err = updater2.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = updater2.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "A"},
 			{Title: "B"},
 			{Title: "C"},

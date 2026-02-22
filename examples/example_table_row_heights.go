@@ -6,32 +6,32 @@ import (
 	"fmt"
 	"log"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
 	// Open the template document
-	updater, err := docxupdater.New("./templates/docx_template.docx")
+	updater, err := godocx.New("./templates/docx_template.docx")
 	if err != nil {
 		log.Fatalf("Failed to open template: %v", err)
 	}
 	defer updater.Cleanup()
 
 	// Add title
-	err = updater.AddHeading(1, "Table Row Height Configuration Examples", docxupdater.PositionEnd)
+	err = updater.AddHeading(1, "Table Row Height Configuration Examples", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add title: %v", err)
 	}
 
 	// Example 1: Auto height (default)
-	err = updater.AddHeading(2, "1. Auto Height (Default - Fits Content)", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "1. Auto Height (Default - Fits Content)", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add heading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Description"},
 			{Title: "Notes"},
 		},
@@ -42,29 +42,29 @@ func main() {
 		},
 		HeaderBold:        true,
 		HeaderBackground:  "4472C4",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "E7E6E6",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 		// RowHeightRule defaults to RowHeightAuto
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert auto height table: %v", err)
 	}
 
-	err = updater.AddText("↑ Rows automatically adjust height to fit content (default behavior).", docxupdater.PositionEnd)
+	err = updater.AddText("↑ Rows automatically adjust height to fit content (default behavior).", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add description: %v", err)
 	}
 
 	// Example 2: Exact height
-	err = updater.AddHeading(2, "2. Exact Height (Fixed - No Growth)", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "2. Exact Height (Fixed - No Growth)", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add heading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Item"},
 			{Title: "Specification"},
 			{Title: "Value"},
@@ -75,33 +75,33 @@ func main() {
 			{"Growth", "No expansion", "Locked"},
 		},
 		HeaderRowHeight:   720, // 0.5 inch (1440 twips = 1 inch)
-		HeaderHeightRule:  docxupdater.RowHeightExact,
+		HeaderHeightRule:  godocx.RowHeightExact,
 		RowHeight:         720, // 0.5 inch
-		RowHeightRule:     docxupdater.RowHeightExact,
+		RowHeightRule:     godocx.RowHeightExact,
 		HeaderBold:        true,
 		HeaderBackground:  "70AD47",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "E2EFD9",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert exact height table: %v", err)
 	}
 
-	err = updater.AddText("↑ All rows have exact height of 0.5 inch (720 twips). Content is clipped if too large.", docxupdater.PositionEnd)
+	err = updater.AddText("↑ All rows have exact height of 0.5 inch (720 twips). Content is clipped if too large.", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add description: %v", err)
 	}
 
 	// Example 3: AtLeast height (minimum with growth)
-	err = updater.AddHeading(2, "3. Minimum Height (At Least - Can Grow)", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "3. Minimum Height (At Least - Can Grow)", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add heading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
 			{Title: "Content"},
 			{Title: "Behavior"},
 		},
@@ -111,34 +111,34 @@ func main() {
 			{"Medium length text here", "Adjusts"},
 		},
 		RowHeight:         500, // Minimum 500 twips
-		RowHeightRule:     docxupdater.RowHeightAtLeast,
+		RowHeightRule:     godocx.RowHeightAtLeast,
 		HeaderBold:        true,
 		HeaderBackground:  "2E75B5",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "DEEBF7",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert atLeast height table: %v", err)
 	}
 
-	err = updater.AddText("↑ Rows have minimum height of 500 twips but can grow if content requires it.", docxupdater.PositionEnd)
+	err = updater.AddText("↑ Rows have minimum height of 500 twips but can grow if content requires it.", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add description: %v", err)
 	}
 
 	// Example 4: Different header and row heights
-	err = updater.AddHeading(2, "4. Different Header and Row Heights", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "4. Different Header and Row Heights", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add heading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Quarter", Alignment: docxupdater.CellAlignCenter},
-			{Title: "Revenue", Alignment: docxupdater.CellAlignRight},
-			{Title: "Growth", Alignment: docxupdater.CellAlignRight},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Quarter", Alignment: godocx.CellAlignCenter},
+			{Title: "Revenue", Alignment: godocx.CellAlignRight},
+			{Title: "Growth", Alignment: godocx.CellAlignRight},
 		},
 		Rows: [][]string{
 			{"Q1 2026", "$250,000", "+12%"},
@@ -147,35 +147,35 @@ func main() {
 			{"Q4 2026", "$340,000", "+21%"},
 		},
 		HeaderRowHeight:   900, // Taller header (0.625 inch)
-		HeaderHeightRule:  docxupdater.RowHeightExact,
+		HeaderHeightRule:  godocx.RowHeightExact,
 		RowHeight:         450, // Shorter data rows (0.3125 inch)
-		RowHeightRule:     docxupdater.RowHeightExact,
+		RowHeightRule:     godocx.RowHeightExact,
 		HeaderBold:        true,
 		HeaderBackground:  "C65911",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "FCE4D6",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert mixed height table: %v", err)
 	}
 
-	err = updater.AddText("↑ Header row is 900 twips (0.625\") tall, data rows are 450 twips (0.3125\") tall.", docxupdater.PositionEnd)
+	err = updater.AddText("↑ Header row is 900 twips (0.625\") tall, data rows are 450 twips (0.3125\") tall.", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add description: %v", err)
 	}
 
 	// Example 5: Tall rows for better spacing
-	err = updater.AddHeading(2, "5. Tall Rows for Visual Impact", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "5. Tall Rows for Visual Impact", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add heading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Task", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Status", Alignment: docxupdater.CellAlignCenter},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Task", Alignment: godocx.CellAlignLeft},
+			{Title: "Status", Alignment: godocx.CellAlignCenter},
 		},
 		Rows: [][]string{
 			{"Design Review", "✓ Complete"},
@@ -183,39 +183,39 @@ func main() {
 			{"Testing", "◯ Pending"},
 		},
 		HeaderRowHeight:   1080, // 0.75 inch
-		HeaderHeightRule:  docxupdater.RowHeightExact,
+		HeaderHeightRule:  godocx.RowHeightExact,
 		RowHeight:         720, // 0.5 inch - spacious rows
-		RowHeightRule:     docxupdater.RowHeightExact,
+		RowHeightRule:     godocx.RowHeightExact,
 		HeaderBold:        true,
 		HeaderBackground:  "7030A0",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "E9D8F4",
-		BorderStyle:       docxupdater.BorderSingle,
-		TableWidthType:    docxupdater.TableWidthPercentage,
+		BorderStyle:       godocx.BorderSingle,
+		TableWidthType:    godocx.TableWidthPercentage,
 		TableWidth:        3750, // 75% width
-		TableAlignment:    docxupdater.AlignCenter,
+		TableAlignment:    godocx.AlignCenter,
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert tall rows table: %v", err)
 	}
 
-	err = updater.AddText("↑ Larger row heights (0.5-0.75 inch) create more spacious, easier-to-read tables.", docxupdater.PositionEnd)
+	err = updater.AddText("↑ Larger row heights (0.5-0.75 inch) create more spacious, easier-to-read tables.", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add description: %v", err)
 	}
 
 	// Add summary section
-	err = updater.AddHeading(2, "Row Height Summary", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "Row Height Summary", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add summary heading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Rule", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Behavior", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Use Case", Alignment: docxupdater.CellAlignLeft},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Rule", Alignment: godocx.CellAlignLeft},
+			{Title: "Behavior", Alignment: godocx.CellAlignLeft},
+			{Title: "Use Case", Alignment: godocx.CellAlignLeft},
 		},
 		Rows: [][]string{
 			{"RowHeightAuto", "Fits content automatically", "Default - variable content"},
@@ -224,10 +224,10 @@ func main() {
 		},
 		HeaderBold:        true,
 		HeaderBackground:  "44546A",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "D6DCE4",
-		BorderStyle:       docxupdater.BorderSingle,
-		RowStyle: docxupdater.CellStyle{
+		BorderStyle:       godocx.BorderSingle,
+		RowStyle: godocx.CellStyle{
 			FontSize: 18, // 9pt
 		},
 	})
@@ -236,17 +236,17 @@ func main() {
 	}
 
 	// Add measurement reference
-	err = updater.AddHeading(2, "Height Measurements (Twips)", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "Height Measurements (Twips)", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add measurements heading: %v", err)
 	}
 
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Inches", Alignment: docxupdater.CellAlignRight},
-			{Title: "Twips", Alignment: docxupdater.CellAlignRight},
-			{Title: "Common Use", Alignment: docxupdater.CellAlignLeft},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Inches", Alignment: godocx.CellAlignRight},
+			{Title: "Twips", Alignment: godocx.CellAlignRight},
+			{Title: "Common Use", Alignment: godocx.CellAlignLeft},
 		},
 		Rows: [][]string{
 			{"0.25\"", "360", "Compact rows"},
@@ -258,17 +258,17 @@ func main() {
 		},
 		HeaderBold:        true,
 		HeaderBackground:  "203864",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "D9E2F3",
-		BorderStyle:       docxupdater.BorderSingle,
-		TableWidthType:    docxupdater.TableWidthPercentage,
+		BorderStyle:       godocx.BorderSingle,
+		TableWidthType:    godocx.TableWidthPercentage,
 		TableWidth:        3000, // 60% width
 	})
 	if err != nil {
 		log.Fatalf("Failed to insert measurements table: %v", err)
 	}
 
-	err = updater.AddText("Note: 1 inch = 1440 twips. Formula: height_in_twips = height_in_inches × 1440", docxupdater.PositionEnd)
+	err = updater.AddText("Note: 1 inch = 1440 twips. Formula: height_in_twips = height_in_inches × 1440", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add note: %v", err)
 	}

@@ -1,10 +1,11 @@
-package docxupdater
+package godocx
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -173,9 +174,8 @@ func (u *Updater) getNextBookmarkID() (int, error) {
 	maxID := 0
 	for _, match := range matches {
 		if len(match) > 1 {
-			var id int
-			fmt.Sscanf(match[1], "%d", &id)
-			if id > maxID {
+			id, err := strconv.Atoi(match[1])
+			if err == nil && id > maxID {
 				maxID = id
 			}
 		}
@@ -244,7 +244,7 @@ func generateEmptyBookmarkXML(name string, id int, opts BookmarkOptions) []byte 
 	}
 
 	// Add bookmark start and end (empty bookmark - just marks a position)
-	buf.WriteString(fmt.Sprintf(`<w:bookmarkStart w:id="%d" w:name="%s"/>`, id, escapeXMLAttribute(name)))
+	buf.WriteString(fmt.Sprintf(`<w:bookmarkStart w:id="%d" w:name="%s"/>`, id, xmlEscape(name)))
 	buf.WriteString(fmt.Sprintf(`<w:bookmarkEnd w:id="%d"/>`, id))
 
 	buf.WriteString("</w:p>")
@@ -266,7 +266,7 @@ func generateBookmarkWithTextXML(name, text string, id int, opts BookmarkOptions
 	}
 
 	// Bookmark start
-	buf.WriteString(fmt.Sprintf(`<w:bookmarkStart w:id="%d" w:name="%s"/>`, id, escapeXMLAttribute(name)))
+	buf.WriteString(fmt.Sprintf(`<w:bookmarkStart w:id="%d" w:name="%s"/>`, id, xmlEscape(name)))
 
 	// Text run
 	buf.WriteString("<w:r>")
@@ -319,7 +319,7 @@ func wrapExistingTextInBookmark(docXML []byte, name, anchorText string, id int) 
 	runEndIdx += textIdx + len("</w:r>")
 
 	// Create bookmark tags
-	bookmarkStart := fmt.Sprintf(`<w:bookmarkStart w:id="%d" w:name="%s"/>`, id, escapeXMLAttribute(name))
+	bookmarkStart := fmt.Sprintf(`<w:bookmarkStart w:id="%d" w:name="%s"/>`, id, xmlEscape(name))
 	bookmarkEnd := fmt.Sprintf(`<w:bookmarkEnd w:id="%d"/>`, id)
 
 	// Build the result with bookmarks wrapping the run

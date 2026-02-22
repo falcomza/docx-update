@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 // ChartStyle represents predefined chart styles (1-48 in Office)
 type ChartStyle int

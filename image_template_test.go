@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"image"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 // TestInsertImageWithRealTemplate tests image insertion using the actual docx_template.docx
@@ -35,18 +35,18 @@ func TestInsertImageWithRealTemplate(t *testing.T) {
 	}
 
 	// Open the template
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert image with proportional width
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		Width:    400, // Height will be calculated as 300
 		AltText:  "Test Image from Template",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert image: %v", err)
@@ -103,38 +103,38 @@ func TestInsertMultipleImagesInRealTemplate(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add a heading
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Image Gallery Test",
-		Style:    docxupdater.StyleHeading1,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading1,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert heading: %v", err)
 	}
 
 	// Insert first image with width only
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     image1Path,
 		Width:    400,
 		AltText:  "First Test Image",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert first image: %v", err)
 	}
 
 	// Add separator text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Figure 2:",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 		Bold:     true,
 	})
 	if err != nil {
@@ -142,11 +142,11 @@ func TestInsertMultipleImagesInRealTemplate(t *testing.T) {
 	}
 
 	// Insert second image with height only
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     image2Path,
 		Height:   350,
 		AltText:  "Second Test Image",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert second image: %v", err)
@@ -204,28 +204,28 @@ func TestInsertImageWithTextAnchorsInRealTemplate(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add anchor text at the beginning
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Introduction Section",
-		Style:    docxupdater.StyleHeading2,
-		Position: docxupdater.PositionBeginning,
+		Style:    godocx.StyleHeading2,
+		Position: godocx.PositionBeginning,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert anchor heading: %v", err)
 	}
 
 	// Insert image after the introduction heading
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		Width:    500,
 		AltText:  "Introduction Diagram",
-		Position: docxupdater.PositionAfterText,
+		Position: godocx.PositionAfterText,
 		Anchor:   "Introduction Section",
 	})
 	if err != nil {
@@ -233,21 +233,21 @@ func TestInsertImageWithTextAnchorsInRealTemplate(t *testing.T) {
 	}
 
 	// Add more text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Figure 1: System Overview",
-		Style:    docxupdater.StyleHeading3,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading3,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert figure caption: %v", err)
 	}
 
 	// Insert image before the figure caption
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		Height:   300,
 		AltText:  "System Overview",
-		Position: docxupdater.PositionBeforeText,
+		Position: godocx.PositionBeforeText,
 		Anchor:   "Figure 1:",
 	})
 	if err != nil {
@@ -297,66 +297,66 @@ func TestInsertImageVariousSizes(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Test 1: Width only (proportional height)
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Test 1: Width=600px (Height should be 400px proportionally)",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 		Bold:     true,
 	})
-	u.InsertImage(docxupdater.ImageOptions{
+	u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		Width:    600,
 		AltText:  "Width Only - 600px",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
 	// Test 2: Height only (proportional width)
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Test 2: Height=300px (Width should be 450px proportionally)",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 		Bold:     true,
 	})
-	u.InsertImage(docxupdater.ImageOptions{
+	u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		Height:   300,
 		AltText:  "Height Only - 300px",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
 	// Test 3: Both dimensions (exact size)
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Test 3: Width=500px, Height=500px (square, may distort)",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 		Bold:     true,
 	})
-	u.InsertImage(docxupdater.ImageOptions{
+	u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		Width:    500,
 		Height:   500,
 		AltText:  "Both Dimensions - 500x500px",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
 	// Test 4: No dimensions (actual size)
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Test 4: No dimensions specified (actual size: 1200x800px)",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 		Bold:     true,
 	})
-	u.InsertImage(docxupdater.ImageOptions{
+	u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		AltText:  "Actual Size - 1200x800px",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
 	// Save the document
@@ -443,30 +443,30 @@ func TestInsertImageWithCaption(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add heading
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Image Gallery with Captions",
-		Style:    docxupdater.StyleHeading1,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading1,
+		Position: godocx.PositionEnd,
 	})
 
 	// Insert first image with caption after (default for figures)
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     image1Path,
 		Width:    500,
 		AltText:  "Sales Chart",
-		Position: docxupdater.PositionEnd,
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionFigure,
+		Position: godocx.PositionEnd,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionFigure,
 			Description: "Monthly Sales Performance",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionAfter,
+			Position:    godocx.CaptionAfter,
 		},
 	})
 	if err != nil {
@@ -474,23 +474,23 @@ func TestInsertImageWithCaption(t *testing.T) {
 	}
 
 	// Add some text
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "The chart above shows significant growth in Q1.",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	})
 
 	// Insert second image with caption before
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     image2Path,
 		Height:   400,
 		AltText:  "System Diagram",
-		Position: docxupdater.PositionEnd,
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionFigure,
+		Position: godocx.PositionEnd,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionFigure,
 			Description: "System Architecture Overview",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionBefore,
+			Position:    godocx.CaptionBefore,
 		},
 	})
 	if err != nil {
@@ -498,17 +498,17 @@ func TestInsertImageWithCaption(t *testing.T) {
 	}
 
 	// Insert third image with centered caption
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     image1Path,
 		Width:    450,
 		AltText:  "Process Flow",
-		Position: docxupdater.PositionEnd,
-		Caption: &docxupdater.CaptionOptions{
-			Type:        docxupdater.CaptionFigure,
+		Position: godocx.PositionEnd,
+		Caption: &godocx.CaptionOptions{
+			Type:        godocx.CaptionFigure,
 			Description: "End-to-End Process Flow",
 			AutoNumber:  true,
-			Position:    docxupdater.CaptionAfter,
-			Alignment:   docxupdater.CellAlignCenter,
+			Position:    godocx.CaptionAfter,
+			Alignment:   godocx.CellAlignCenter,
 		},
 	})
 	if err != nil {
@@ -566,24 +566,24 @@ func TestInsertImageWithManualCaption(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert image with manual caption numbering
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     testImagePath,
 		Width:    400,
 		AltText:  "Product Photo",
-		Position: docxupdater.PositionEnd,
-		Caption: &docxupdater.CaptionOptions{
-			Type:         docxupdater.CaptionFigure,
+		Position: godocx.PositionEnd,
+		Caption: &godocx.CaptionOptions{
+			Type:         godocx.CaptionFigure,
 			Description:  "Product XYZ-100",
 			AutoNumber:   false,
 			ManualNumber: 5, // Start at Figure 5
-			Position:     docxupdater.CaptionAfter,
+			Position:     godocx.CaptionAfter,
 		},
 	})
 	if err != nil {
@@ -620,58 +620,58 @@ func TestInsertBreaksWithRealTemplate(t *testing.T) {
 		t.Fatalf("Failed to create output directory: %v", err)
 	}
 
-	u, err := docxupdater.New(templatePath)
+	u, err := godocx.New(templatePath)
 	if err != nil {
 		t.Fatalf("Failed to open template: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add Chapter 1
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Chapter 1: Introduction",
-		Style:    docxupdater.StyleHeading1,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading1,
+		Position: godocx.PositionEnd,
 	})
 
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This is the first chapter with introductory content.",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
 	// Page break after Chapter 1
-	err = u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionEnd,
+	err = u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert page break: %v", err)
 	}
 
 	// Add Chapter 2
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Chapter 2: Methods",
-		Style:    docxupdater.StyleHeading1,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading1,
+		Position: godocx.PositionEnd,
 	})
 
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This chapter describes the methodology.",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
 	// Section break (next page) before Chapter 3
-	err = u.InsertSectionBreak(docxupdater.BreakOptions{
-		Position:    docxupdater.PositionEnd,
-		SectionType: docxupdater.SectionBreakNextPage,
+	err = u.InsertSectionBreak(godocx.BreakOptions{
+		Position:    godocx.PositionEnd,
+		SectionType: godocx.SectionBreakNextPage,
 	})
 	if err != nil {
 		t.Fatalf("Failed to insert section break: %v", err)
 	}
 
 	// Add Chapter 3
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Chapter 3: Results",
-		Style:    docxupdater.StyleHeading1,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleHeading1,
+		Position: godocx.PositionEnd,
 	})
 
 	// Save the document

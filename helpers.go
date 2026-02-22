@@ -1,6 +1,10 @@
-package docxupdater
+package godocx
 
 import (
+	"encoding/xml"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -61,4 +65,64 @@ func normalizeHexColor(color string) string {
 		}
 	}
 	return strings.ToUpper(c)
+}
+
+// getNextDocPrId finds the next available docPr ID in the document.
+func (u *Updater) getNextDocPrId() (int, error) {
+	docPath := filepath.Join(u.tempDir, "word", "document.xml")
+	raw, err := os.ReadFile(docPath)
+	if err != nil {
+		return 0, fmt.Errorf("read document: %w", err)
+	}
+
+	matches := docPrIDPattern.FindAllStringSubmatch(string(raw), -1)
+
+	maxId := 0
+	for _, match := range matches {
+		if len(match) > 1 {
+			id, err := strconv.Atoi(match[1])
+			if err != nil {
+				continue
+			}
+			if id > maxId {
+				maxId = id
+			}
+		}
+	}
+
+	return maxId + 1, nil
+}
+
+// getNextDocumentRelId finds the next available relationship ID in document.xml.rels.
+func (u *Updater) getNextDocumentRelId() (string, error) {
+	relsPath := filepath.Join(u.tempDir, "word", "_rels", "document.xml.rels")
+	return getNextRelIDFromFile(relsPath)
+}
+
+// getNextRelIDFromFile finds the next available relationship ID in a .rels file.
+func getNextRelIDFromFile(relsPath string) (string, error) {
+	raw, err := os.ReadFile(relsPath)
+	if err != nil {
+		return "", fmt.Errorf("read rels file %s: %w", relsPath, err)
+	}
+
+	var rels relationships
+	if err := xml.Unmarshal(raw, &rels); err != nil {
+		return "", fmt.Errorf("parse rels file %s: %w", relsPath, err)
+	}
+
+	maxId := 0
+	for _, rel := range rels.Relationships {
+		if matches := relIDPattern.FindStringSubmatch(rel.ID); matches != nil {
+			id, err := strconv.Atoi(matches[1])
+			if err != nil {
+				continue
+			}
+			if id > maxId {
+				maxId = id
+			}
+		}
+	}
+
+	return fmt.Sprintf("rId%d", maxId+1), nil
 }

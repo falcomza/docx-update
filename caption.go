@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"bytes"
@@ -57,11 +57,11 @@ func DefaultCaptionOptions(captionType CaptionType) CaptionOptions {
 	}
 
 	return CaptionOptions{
-		Type:        captionType,
-		Position:    position,
-		Style:       "Caption",
-		AutoNumber:  true,
-		Alignment:   CellAlignLeft,
+		Type:       captionType,
+		Position:   position,
+		Style:      "Caption",
+		AutoNumber: true,
+		Alignment:  CellAlignLeft,
 	}
 }
 
@@ -74,7 +74,7 @@ func generateCaptionXML(opts CaptionOptions) []byte {
 
 	// Add paragraph properties
 	buf.WriteString("<w:pPr>")
-	
+
 	// Apply style (default: Caption)
 	style := opts.Style
 	if style == "" {

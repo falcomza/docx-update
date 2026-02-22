@@ -7,28 +7,28 @@ import (
 	"log"
 	"time"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
 	// Open the template document
-	updater, err := docxupdater.New("./templates/docx_template.docx")
+	updater, err := godocx.New("./templates/docx_template.docx")
 	if err != nil {
 		log.Fatalf("Failed to open template: %v", err)
 	}
 	defer updater.Cleanup()
 
 	// Add a title for the report
-	err = updater.AddHeading(1, "Monthly Sales Report - "+time.Now().Format("January 2006"), docxupdater.PositionEnd)
+	err = updater.AddHeading(1, "Monthly Sales Report - "+time.Now().Format("January 2006"), godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add title: %v", err)
 	}
 
 	// Add subtitle
-	err = updater.InsertParagraph(docxupdater.ParagraphOptions{
+	err = updater.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Generated on: " + time.Now().Format("January 2, 2006"),
-		Style:    docxupdater.StyleSubtitle,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleSubtitle,
+		Position: godocx.PositionEnd,
 		Italic:   true,
 	})
 	if err != nil {
@@ -36,21 +36,21 @@ func main() {
 	}
 
 	// Add section heading
-	err = updater.AddHeading(2, "Sales by Region", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "Sales by Region", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add section heading: %v", err)
 	}
 
 	// Create a professional sales table
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Region", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Q1 Sales", Alignment: docxupdater.CellAlignRight},
-			{Title: "Q2 Sales", Alignment: docxupdater.CellAlignRight},
-			{Title: "Q3 Sales", Alignment: docxupdater.CellAlignRight},
-			{Title: "Q4 Sales", Alignment: docxupdater.CellAlignRight},
-			{Title: "Total", Alignment: docxupdater.CellAlignRight},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Region", Alignment: godocx.CellAlignLeft},
+			{Title: "Q1 Sales", Alignment: godocx.CellAlignRight},
+			{Title: "Q2 Sales", Alignment: godocx.CellAlignRight},
+			{Title: "Q3 Sales", Alignment: godocx.CellAlignRight},
+			{Title: "Q4 Sales", Alignment: godocx.CellAlignRight},
+			{Title: "Total", Alignment: godocx.CellAlignRight},
 		},
 		Rows: [][]string{
 			{"North America", "$125,000", "$132,000", "$145,000", "$158,000", "$560,000"},
@@ -61,14 +61,14 @@ func main() {
 		},
 		HeaderBold:        true,
 		HeaderBackground:  "2E75B5",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "E7E6E6",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 		BorderSize:        6,
 		BorderColor:       "2E75B5",
-		TableAlignment:    docxupdater.AlignCenter,
+		TableAlignment:    godocx.AlignCenter,
 		RepeatHeader:      true,
-		RowStyle: docxupdater.CellStyle{
+		RowStyle: godocx.CellStyle{
 			FontSize: 20, // 10pt
 		},
 	})
@@ -77,21 +77,21 @@ func main() {
 	}
 
 	// Add another section
-	err = updater.AddHeading(2, "Top Performers", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "Top Performers", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add performers heading: %v", err)
 	}
 
 	// Create employee performance table
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Rank", Alignment: docxupdater.CellAlignCenter},
-			{Title: "Employee Name", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Department", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Sales", Alignment: docxupdater.CellAlignRight},
-			{Title: "Target", Alignment: docxupdater.CellAlignRight},
-			{Title: "Achievement", Alignment: docxupdater.CellAlignCenter},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Rank", Alignment: godocx.CellAlignCenter},
+			{Title: "Employee Name", Alignment: godocx.CellAlignLeft},
+			{Title: "Department", Alignment: godocx.CellAlignLeft},
+			{Title: "Sales", Alignment: godocx.CellAlignRight},
+			{Title: "Target", Alignment: godocx.CellAlignRight},
+			{Title: "Achievement", Alignment: godocx.CellAlignCenter},
 		},
 		ColumnWidths: []int{600, 2000, 1500, 1200, 1200, 1000}, // Custom widths
 		Rows: [][]string{
@@ -103,12 +103,12 @@ func main() {
 		},
 		HeaderBold:        true,
 		HeaderBackground:  "4472C4",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "DEEBF7",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 		BorderSize:        4,
-		TableAlignment:    docxupdater.AlignCenter,
-		RowStyle: docxupdater.CellStyle{
+		TableAlignment:    godocx.AlignCenter,
+		RowStyle: godocx.CellStyle{
 			FontSize: 20,
 		},
 	})
@@ -117,20 +117,20 @@ func main() {
 	}
 
 	// Add product inventory section
-	err = updater.AddHeading(2, "Product Inventory Status", docxupdater.PositionEnd)
+	err = updater.AddHeading(2, "Product Inventory Status", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add inventory heading: %v", err)
 	}
 
 	// Create inventory table with custom styling
-	err = updater.InsertTable(docxupdater.TableOptions{
-		Position: docxupdater.PositionEnd,
-		Columns: []docxupdater.ColumnDefinition{
-			{Title: "Product Code", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Product Name", Alignment: docxupdater.CellAlignLeft},
-			{Title: "Category", Alignment: docxupdater.CellAlignLeft},
-			{Title: "In Stock", Alignment: docxupdater.CellAlignRight},
-			{Title: "Status", Alignment: docxupdater.CellAlignCenter},
+	err = updater.InsertTable(godocx.TableOptions{
+		Position: godocx.PositionEnd,
+		Columns: []godocx.ColumnDefinition{
+			{Title: "Product Code", Alignment: godocx.CellAlignLeft},
+			{Title: "Product Name", Alignment: godocx.CellAlignLeft},
+			{Title: "Category", Alignment: godocx.CellAlignLeft},
+			{Title: "In Stock", Alignment: godocx.CellAlignRight},
+			{Title: "Status", Alignment: godocx.CellAlignCenter},
 		},
 		Rows: [][]string{
 			{"PRD-001", "Wireless Mouse", "Electronics", "245", "✓ Available"},
@@ -144,12 +144,12 @@ func main() {
 		},
 		HeaderBold:        true,
 		HeaderBackground:  "70AD47",
-		HeaderAlignment:   docxupdater.CellAlignCenter,
+		HeaderAlignment:   godocx.CellAlignCenter,
 		AlternateRowColor: "E2EFD9",
-		BorderStyle:       docxupdater.BorderSingle,
+		BorderStyle:       godocx.BorderSingle,
 		BorderSize:        6,
 		BorderColor:       "70AD47",
-		TableAlignment:    docxupdater.AlignCenter,
+		TableAlignment:    godocx.AlignCenter,
 		RepeatHeader:      true,
 	})
 	if err != nil {
@@ -157,15 +157,15 @@ func main() {
 	}
 
 	// Add footer note
-	err = updater.AddText("──────────────────────────────────────────────────────────", docxupdater.PositionEnd)
+	err = updater.AddText("──────────────────────────────────────────────────────────", godocx.PositionEnd)
 	if err != nil {
 		log.Fatalf("Failed to add separator: %v", err)
 	}
 
-	err = updater.InsertParagraph(docxupdater.ParagraphOptions{
+	err = updater.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Note: All figures are in USD. Report generated automatically by the sales tracking system.",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 		Italic:   true,
 	})
 	if err != nil {

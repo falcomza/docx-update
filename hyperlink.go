@@ -1,11 +1,10 @@
-package docxupdater
+package godocx
 
 import (
 	"fmt"
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -154,14 +153,16 @@ func (u *Updater) addHyperlinkRelationship(urlStr string) (string, error) {
 	content := string(raw)
 
 	// Find next available relationship ID
-	nextID := u.getNextRelationshipID(content)
-	relID := fmt.Sprintf("rId%d", nextID)
+	relID, err := getNextRelIDFromFile(relsPath)
+	if err != nil {
+		return "", fmt.Errorf("find next relationship id: %w", err)
+	}
 
 	// Create hyperlink relationship
 	newRel := fmt.Sprintf(
 		`<Relationship Id="%s" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="%s" TargetMode="External"/>`,
 		relID,
-		escapeXMLAttribute(urlStr),
+		xmlEscape(urlStr),
 	)
 
 	// Insert before closing </Relationships>
@@ -173,25 +174,6 @@ func (u *Updater) addHyperlinkRelationship(urlStr string) (string, error) {
 	}
 
 	return relID, nil
-}
-
-// getNextRelationshipID finds the next available relationship ID
-func (u *Updater) getNextRelationshipID(relsContent string) int {
-	pattern := regexp.MustCompile(`Id="rId(\d+)"`)
-	matches := pattern.FindAllStringSubmatch(relsContent, -1)
-
-	maxID := 0
-	for _, match := range matches {
-		if len(match) > 1 {
-			var id int
-			fmt.Sscanf(match[1], "%d", &id)
-			if id > maxID {
-				maxID = id
-			}
-		}
-	}
-
-	return maxID + 1
 }
 
 // generateHyperlinkXML creates the XML for a hyperlink
@@ -214,7 +196,7 @@ func (u *Updater) generateHyperlinkXML(text, relID string, opts HyperlinkOptions
 		if tooltip == "" {
 			tooltip = opts.ScreenTip
 		}
-		buf.WriteString(fmt.Sprintf(` w:tooltip="%s"`, escapeXMLAttribute(tooltip)))
+		buf.WriteString(fmt.Sprintf(` w:tooltip="%s"`, xmlEscape(tooltip)))
 	}
 	buf.WriteString(">")
 
@@ -236,7 +218,7 @@ func (u *Updater) generateHyperlinkXML(text, relID string, opts HyperlinkOptions
 	}
 
 	buf.WriteString("</w:rPr>")
-	buf.WriteString(fmt.Sprintf("<w:t>%s</w:t>", escapeXML(text)))
+	buf.WriteString(fmt.Sprintf("<w:t>%s</w:t>", xmlEscape(text)))
 	buf.WriteString("</w:r>")
 
 	buf.WriteString("</w:hyperlink>")
@@ -259,13 +241,13 @@ func (u *Updater) generateInternalHyperlinkXML(text, bookmarkName string, opts H
 	}
 
 	// Start hyperlink with anchor (internal link)
-	buf.WriteString(fmt.Sprintf(`<w:hyperlink w:anchor="%s"`, escapeXMLAttribute(bookmarkName)))
+	buf.WriteString(fmt.Sprintf(`<w:hyperlink w:anchor="%s"`, xmlEscape(bookmarkName)))
 	if opts.Tooltip != "" || opts.ScreenTip != "" {
 		tooltip := opts.Tooltip
 		if tooltip == "" {
 			tooltip = opts.ScreenTip
 		}
-		buf.WriteString(fmt.Sprintf(` w:tooltip="%s"`, escapeXMLAttribute(tooltip)))
+		buf.WriteString(fmt.Sprintf(` w:tooltip="%s"`, xmlEscape(tooltip)))
 	}
 	buf.WriteString(">")
 
@@ -287,7 +269,7 @@ func (u *Updater) generateInternalHyperlinkXML(text, bookmarkName string, opts H
 	}
 
 	buf.WriteString("</w:rPr>")
-	buf.WriteString(fmt.Sprintf("<w:t>%s</w:t>", escapeXML(text)))
+	buf.WriteString(fmt.Sprintf("<w:t>%s</w:t>", xmlEscape(text)))
 	buf.WriteString("</w:r>")
 
 	buf.WriteString("</w:hyperlink>")
@@ -337,13 +319,4 @@ func validateURL(urlStr string) error {
 	}
 
 	return nil
-}
-
-// escapeXMLAttribute escapes attribute values
-func escapeXMLAttribute(s string) string {
-	s = strings.ReplaceAll(s, "&", "&amp;")
-	s = strings.ReplaceAll(s, "<", "&lt;")
-	s = strings.ReplaceAll(s, ">", "&gt;")
-	s = strings.ReplaceAll(s, "\"", "&quot;")
-	return s
 }

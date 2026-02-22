@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"os"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func TestInsertPageBreakAtEnd(t *testing.T) {
@@ -18,15 +18,15 @@ func TestInsertPageBreakAtEnd(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert a page break at the end
-	err = u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionEnd,
+	err = u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertPageBreak failed: %v", err)
@@ -52,15 +52,15 @@ func TestInsertPageBreakAtBeginning(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert a page break at the beginning
-	err = u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionBeginning,
+	err = u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionBeginning,
 	})
 	if err != nil {
 		t.Fatalf("InsertPageBreak failed: %v", err)
@@ -86,24 +86,24 @@ func TestInsertPageBreakAfterText(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add anchor text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "First section content",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
 	}
 
 	// Insert page break after the text
-	err = u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionAfterText,
+	err = u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionAfterText,
 		Anchor:   "First section",
 	})
 	if err != nil {
@@ -130,24 +130,24 @@ func TestInsertPageBreakBeforeText(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add anchor text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Second section content",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
 	}
 
 	// Insert page break before the text
-	err = u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionBeforeText,
+	err = u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionBeforeText,
 		Anchor:   "Second section",
 	})
 	if err != nil {
@@ -174,16 +174,16 @@ func TestInsertSectionBreakNextPage(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert a section break (next page)
-	err = u.InsertSectionBreak(docxupdater.BreakOptions{
-		Position:    docxupdater.PositionEnd,
-		SectionType: docxupdater.SectionBreakNextPage,
+	err = u.InsertSectionBreak(godocx.BreakOptions{
+		Position:    godocx.PositionEnd,
+		SectionType: godocx.SectionBreakNextPage,
 	})
 	if err != nil {
 		t.Fatalf("InsertSectionBreak failed: %v", err)
@@ -212,16 +212,16 @@ func TestInsertSectionBreakContinuous(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert a continuous section break
-	err = u.InsertSectionBreak(docxupdater.BreakOptions{
-		Position:    docxupdater.PositionEnd,
-		SectionType: docxupdater.SectionBreakContinuous,
+	err = u.InsertSectionBreak(godocx.BreakOptions{
+		Position:    godocx.PositionEnd,
+		SectionType: godocx.SectionBreakContinuous,
 	})
 	if err != nil {
 		t.Fatalf("InsertSectionBreak failed: %v", err)
@@ -250,16 +250,16 @@ func TestInsertSectionBreakEvenPage(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert an even page section break
-	err = u.InsertSectionBreak(docxupdater.BreakOptions{
-		Position:    docxupdater.PositionEnd,
-		SectionType: docxupdater.SectionBreakEvenPage,
+	err = u.InsertSectionBreak(godocx.BreakOptions{
+		Position:    godocx.PositionEnd,
+		SectionType: godocx.SectionBreakEvenPage,
 	})
 	if err != nil {
 		t.Fatalf("InsertSectionBreak failed: %v", err)
@@ -285,16 +285,16 @@ func TestInsertSectionBreakOddPage(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert an odd page section break
-	err = u.InsertSectionBreak(docxupdater.BreakOptions{
-		Position:    docxupdater.PositionEnd,
-		SectionType: docxupdater.SectionBreakOddPage,
+	err = u.InsertSectionBreak(godocx.BreakOptions{
+		Position:    godocx.PositionEnd,
+		SectionType: godocx.SectionBreakOddPage,
 	})
 	if err != nil {
 		t.Fatalf("InsertSectionBreak failed: %v", err)
@@ -320,34 +320,34 @@ func TestInsertMultiplePageBreaks(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add some content and page breaks
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Page 1 content",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
-	u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionEnd,
+	u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionEnd,
 	})
 
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Page 2 content",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
-	u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionEnd,
+	u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionEnd,
 	})
 
-	u.InsertParagraph(docxupdater.ParagraphOptions{
+	u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Page 3 content",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 
 	if err := u.Save(outputPath); err != nil {
@@ -371,15 +371,15 @@ func TestInsertSectionBreakDefaultType(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert section break without specifying type (should default to nextPage)
-	err = u.InsertSectionBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionEnd,
+	err = u.InsertSectionBreak(godocx.BreakOptions{
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertSectionBreak failed: %v", err)
@@ -404,15 +404,15 @@ func TestInsertPageBreakInvalidAnchor(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Try to insert page break with non-existent anchor
-	err = u.InsertPageBreak(docxupdater.BreakOptions{
-		Position: docxupdater.PositionAfterText,
+	err = u.InsertPageBreak(godocx.BreakOptions{
+		Position: godocx.PositionAfterText,
 		Anchor:   "nonexistent text",
 	})
 	if err == nil {

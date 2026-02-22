@@ -10,7 +10,7 @@ A powerful Go library for programmatically manipulating Microsoft Word (DOCX) do
 🎯 **Comprehensive DOCX Manipulation**
 - **Chart Updates**: Modify existing chart data with automatic Excel workbook synchronization
 - **Chart Insertion**: Create professional charts from scratch (bar, line, scatter, and more)
-- **Chart Copying**: Duplicate existing charts programmatically for bulk report generation
+- **Multi-Chart Workflows**: Insert multiple charts programmatically for bulk report generation
 - **Table Creation**: Insert formatted tables with custom styles, borders, and row heights
 - **Paragraph Insertion**: Add styled text with headings, alignment, list support, and robust anchor positioning
 - **Image Insertion**: Add images with automatic proportional sizing and flexible positioning
@@ -37,7 +37,7 @@ A powerful Go library for programmatically manipulating Microsoft Word (DOCX) do
 ## Installation
 
 ```bash
-go get github.com/falcomza/docx-update
+go get github.com/falcomza/go-docx
 ```
 
 ## Quick Start
@@ -47,7 +47,7 @@ package main
 
 import (
     "log"
-    updater "github.com/falcomza/docx-update"
+    updater "github.com/falcomza/go-docx"
 )
 
 func main() {
@@ -410,21 +410,25 @@ u.AddCaption(updater.CaptionOptions{
 u.Save("with_captions.docx")
 ```
 
-### Copying Charts
+### Multiple Charts
 
-Duplicate existing charts for bulk report generation:
+Create multiple charts for bulk report generation:
 
 ```go
 u, _ := updater.New("template.docx")
 defer u.Cleanup()
 
-// Copy chart 1 three times with different data
+// Insert three charts with different data
 for i := 0; i < 3; i++ {
-    data := updater.ChartData{
+    chartOptions := updater.ChartOptions{
+        Position:   updater.PositionEnd,
+        ChartKind:  updater.ChartKindColumn,
+        Title:      fmt.Sprintf("Regional Report %d", i+1),
         Categories: regions[i],
         Series:     salesData[i],
+        ShowLegend: true,
     }
-    u.CopyChart(1, data, updater.PositionEnd)
+    u.InsertChart(chartOptions)
 }
 
 u.Save("multi_chart_report.docx")
@@ -713,7 +717,6 @@ u.Save("with_properties.docx")
 ### Chart Operations
 - `UpdateChart(index int, data ChartData)` - Update existing chart data
 - `InsertChart(options ChartOptions)` - Create new chart from scratch
-- `CopyChart(sourceIndex int, data ChartData, position InsertPosition)` - Copy and modify chart
 
 ### Table Operations
 - `InsertTable(options TableOptions)` - Insert formatted table with custom styling
@@ -775,7 +778,6 @@ u.Save("with_properties.docx")
 ├── *.go                   # Core library (root level)
 │   ├── chart_updater.go   # Main API
 │   ├── chart.go           # Chart insertion
-│   ├── chart_copy.go      # Chart duplication
 │   ├── chart_xml.go       # XML manipulation
 │   ├── excel_handler.go   # Workbook updates
 │   ├── table.go           # Table insertion
@@ -879,7 +881,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- 📫 Report issues on [GitHub Issues](https://github.com/falcomza/docx-update/issues)
+- 📫 Report issues on [GitHub Issues](https://github.com/falcomza/go-docx/issues)
 - ⭐ Star this repo if you find it useful
 - 🔧 Contributions and feedback are always welcome
 

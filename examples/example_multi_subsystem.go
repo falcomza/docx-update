@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	updater "github.com/falcomza/docx-update"
+	updater "github.com/falcomza/go-docx"
 )
 
 func main() {
@@ -69,28 +69,23 @@ func main() {
 		},
 	}
 
-	// Process each subsystem
-	for i, subsystem := range subsystems {
-		var chartIndex int
-
-		if i == 0 {
-			// Use the template chart for the first subsystem
-			chartIndex = 1
-			fmt.Printf("Using template chart (index 1) for %s\n", subsystem.Name)
-		} else {
-			// Copy the template chart for subsequent subsystems
-			chartIndex, err = u.CopyChart(1, subsystem.Marker)
-			if err != nil {
-				log.Fatalf("Failed to copy chart for %s: %v", subsystem.Name, err)
-			}
-			fmt.Printf("Created chart %d for %s\n", chartIndex, subsystem.Name)
+	// Process each subsystem by inserting a new chart
+	for _, subsystem := range subsystems {
+		opts := updater.ChartOptions{
+			Position:          updater.PositionEnd,
+			ChartKind:         updater.ChartKindColumn,
+			Title:             subsystem.Data.ChartTitle,
+			CategoryAxisTitle: subsystem.Data.CategoryAxisTitle,
+			ValueAxisTitle:    subsystem.Data.ValueAxisTitle,
+			Categories:        subsystem.Data.Categories,
+			Series:            subsystem.Data.Series,
+			ShowLegend:        true,
 		}
 
-		// Update the chart with subsystem-specific data
-		if err := u.UpdateChart(chartIndex, subsystem.Data); err != nil {
-			log.Fatalf("Failed to update chart %d for %s: %v", chartIndex, subsystem.Name, err)
+		if err := u.InsertChart(opts); err != nil {
+			log.Fatalf("Failed to insert chart for %s: %v", subsystem.Name, err)
 		}
-		fmt.Printf("Updated chart %d with data for %s\n", chartIndex, subsystem.Name)
+		fmt.Printf("Inserted chart for %s\n", subsystem.Name)
 	}
 
 	// Save the final document

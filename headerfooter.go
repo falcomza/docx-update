@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"fmt"
@@ -252,7 +252,7 @@ func (u *Updater) generateThreeColumnTable(content HeaderFooterContent) string {
 	buf.WriteString("<w:tcPr><w:tcW w:w=\"3000\" w:type=\"dxa\"/></w:tcPr>")
 	if content.LeftText != "" {
 		buf.WriteString("<w:p><w:pPr><w:jc w:val=\"left\"/></w:pPr>")
-		buf.WriteString(fmt.Sprintf("<w:r><w:t>%s</w:t></w:r>", escapeXML(content.LeftText)))
+		buf.WriteString(fmt.Sprintf("<w:r><w:t>%s</w:t></w:r>", xmlEscape(content.LeftText)))
 		buf.WriteString("</w:p>")
 	} else {
 		buf.WriteString("<w:p/>")
@@ -264,7 +264,7 @@ func (u *Updater) generateThreeColumnTable(content HeaderFooterContent) string {
 	buf.WriteString("<w:tcPr><w:tcW w:w=\"3000\" w:type=\"dxa\"/></w:tcPr>")
 	if content.CenterText != "" {
 		buf.WriteString("<w:p><w:pPr><w:jc w:val=\"center\"/></w:pPr>")
-		buf.WriteString(fmt.Sprintf("<w:r><w:t>%s</w:t></w:r>", escapeXML(content.CenterText)))
+		buf.WriteString(fmt.Sprintf("<w:r><w:t>%s</w:t></w:r>", xmlEscape(content.CenterText)))
 		buf.WriteString("</w:p>")
 	} else {
 		buf.WriteString("<w:p/>")
@@ -276,7 +276,7 @@ func (u *Updater) generateThreeColumnTable(content HeaderFooterContent) string {
 	buf.WriteString("<w:tcPr><w:tcW w:w=\"3000\" w:type=\"dxa\"/></w:tcPr>")
 	if content.RightText != "" {
 		buf.WriteString("<w:p><w:pPr><w:jc w:val=\"right\"/></w:pPr>")
-		buf.WriteString(fmt.Sprintf("<w:r><w:t>%s</w:t></w:r>", escapeXML(content.RightText)))
+		buf.WriteString(fmt.Sprintf("<w:r><w:t>%s</w:t></w:r>", xmlEscape(content.RightText)))
 		buf.WriteString("</w:p>")
 	} else {
 		buf.WriteString("<w:p/>")
@@ -301,7 +301,7 @@ func (u *Updater) generatePageNumberParagraph(format string) string {
 		// Custom format (e.g., "Page X of Y")
 		parts := strings.Split(format, "X")
 		if len(parts) > 0 && parts[0] != "" {
-			buf.WriteString(fmt.Sprintf("<w:t>%s</w:t></w:r><w:r>", escapeXML(parts[0])))
+			buf.WriteString(fmt.Sprintf("<w:t>%s</w:t></w:r><w:r>", xmlEscape(parts[0])))
 		}
 	}
 
@@ -372,8 +372,10 @@ func (u *Updater) addHeaderFooterRelationship(filename, hdrFtrType string) (stri
 	}
 
 	// Find next available relationship ID
-	nextID := u.getNextRelationshipID(content)
-	relID := fmt.Sprintf("rId%d", nextID)
+	relID, err := getNextRelIDFromFile(relsPath)
+	if err != nil {
+		return "", fmt.Errorf("find next relationship id: %w", err)
+	}
 
 	// Create header/footer relationship
 	relType := "header"

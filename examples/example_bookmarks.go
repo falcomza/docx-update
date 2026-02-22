@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"log"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
 	// Create updater from template or blank document
-	u, err := docxupdater.New("template.docx")
+	u, err := godocx.New("template.docx")
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
@@ -22,8 +22,8 @@ func main() {
 
 	// Example 1: Create an empty bookmark (position marker)
 	fmt.Println("\n1. Creating empty bookmarks as position markers...")
-	emptyOpts := docxupdater.DefaultBookmarkOptions()
-	emptyOpts.Position = docxupdater.PositionEnd
+	emptyOpts := godocx.DefaultBookmarkOptions()
+	emptyOpts.Position = godocx.PositionEnd
 
 	if err := u.CreateBookmark("section_marker", emptyOpts); err != nil {
 		log.Printf("Warning: Failed to create empty bookmark: %v", err)
@@ -31,19 +31,19 @@ func main() {
 
 	// Example 2: Create bookmark with text content
 	fmt.Println("2. Creating bookmarks with text content...")
-	textOpts := docxupdater.DefaultBookmarkOptions()
-	textOpts.Position = docxupdater.PositionEnd
-	textOpts.Style = docxupdater.StyleHeading1
+	textOpts := godocx.DefaultBookmarkOptions()
+	textOpts.Position = godocx.PositionEnd
+	textOpts.Style = godocx.StyleHeading1
 
 	if err := u.CreateBookmarkWithText("executive_summary", "Executive Summary", textOpts); err != nil {
 		log.Printf("Warning: Failed to create bookmark with text: %v", err)
 	}
 
 	// Add some content to the section
-	if err := u.InsertParagraph(docxupdater.ParagraphOptions{
+	if err := u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This document provides a comprehensive overview of our findings and recommendations.",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	}); err != nil {
 		log.Printf("Warning: Failed to insert paragraph: %v", err)
 	}
@@ -60,9 +60,9 @@ func main() {
 	}
 
 	for bookmarkName, title := range sections {
-		sectionOpts := docxupdater.DefaultBookmarkOptions()
-		sectionOpts.Position = docxupdater.PositionEnd
-		sectionOpts.Style = docxupdater.StyleHeading2
+		sectionOpts := godocx.DefaultBookmarkOptions()
+		sectionOpts.Position = godocx.PositionEnd
+		sectionOpts.Style = godocx.StyleHeading2
 
 		if err := u.CreateBookmarkWithText(bookmarkName, title, sectionOpts); err != nil {
 			log.Printf("Warning: Failed to create bookmark '%s': %v", bookmarkName, err)
@@ -71,10 +71,10 @@ func main() {
 
 		// Add sample content to each section
 		content := fmt.Sprintf("Content for the %s section goes here.", title)
-		if err := u.InsertParagraph(docxupdater.ParagraphOptions{
+		if err := u.InsertParagraph(godocx.ParagraphOptions{
 			Text:     content,
-			Style:    docxupdater.StyleNormal,
-			Position: docxupdater.PositionEnd,
+			Style:    godocx.StyleNormal,
+			Position: godocx.PositionEnd,
 		}); err != nil {
 			log.Printf("Warning: Failed to insert paragraph: %v", err)
 		}
@@ -84,10 +84,10 @@ func main() {
 	fmt.Println("4. Creating table of contents with internal links...")
 
 	// Insert TOC heading at the beginning
-	tocHeadingOpts := docxupdater.ParagraphOptions{
+	tocHeadingOpts := godocx.ParagraphOptions{
 		Text:     "Table of Contents",
-		Style:    docxupdater.StyleHeading1,
-		Position: docxupdater.PositionBeginning,
+		Style:    godocx.StyleHeading1,
+		Position: godocx.PositionBeginning,
 	}
 	if err := u.InsertParagraph(tocHeadingOpts); err != nil {
 		log.Printf("Warning: Failed to insert TOC heading: %v", err)
@@ -107,8 +107,8 @@ func main() {
 	}
 
 	for _, item := range tocItems {
-		linkOpts := docxupdater.DefaultHyperlinkOptions()
-		linkOpts.Position = docxupdater.PositionAfterText
+		linkOpts := godocx.DefaultHyperlinkOptions()
+		linkOpts.Position = godocx.PositionAfterText
 		linkOpts.Anchor = "Table of Contents"
 		linkOpts.Color = "0563C1" // Word blue
 		linkOpts.Underline = true
@@ -122,10 +122,10 @@ func main() {
 	fmt.Println("5. Wrapping existing text in bookmarks...")
 
 	// First add some text
-	if err := u.InsertParagraph(docxupdater.ParagraphOptions{
+	if err := u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This is a key finding that we want to reference later.",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	}); err != nil {
 		log.Printf("Warning: Failed to insert paragraph: %v", err)
 	}
@@ -136,8 +136,8 @@ func main() {
 	}
 
 	// Create a reference to the key finding
-	refLinkOpts := docxupdater.DefaultHyperlinkOptions()
-	refLinkOpts.Position = docxupdater.PositionEnd
+	refLinkOpts := godocx.DefaultHyperlinkOptions()
+	refLinkOpts.Position = godocx.PositionEnd
 	if err := u.InsertInternalLink("See the key finding above", "key_finding", refLinkOpts); err != nil {
 		log.Printf("Warning: Failed to create reference link: %v", err)
 	}
@@ -146,17 +146,17 @@ func main() {
 	fmt.Println("6. Creating bookmarks at specific positions...")
 
 	// Add anchor text
-	if err := u.InsertParagraph(docxupdater.ParagraphOptions{
+	if err := u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This is the middle section of the document.",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	}); err != nil {
 		log.Printf("Warning: Failed to insert paragraph: %v", err)
 	}
 
 	// Insert bookmark after specific text
-	afterOpts := docxupdater.DefaultBookmarkOptions()
-	afterOpts.Position = docxupdater.PositionAfterText
+	afterOpts := godocx.DefaultBookmarkOptions()
+	afterOpts.Position = godocx.PositionAfterText
 	afterOpts.Anchor = "middle section"
 	if err := u.CreateBookmarkWithText("after_middle", "Content After Middle", afterOpts); err != nil {
 		log.Printf("Warning: Failed to create bookmark after text: %v", err)
@@ -180,8 +180,8 @@ func main() {
 
 	fmt.Println("   Valid bookmark names:")
 	for _, name := range validNames {
-		testOpts := docxupdater.DefaultBookmarkOptions()
-		testOpts.Position = docxupdater.PositionEnd
+		testOpts := godocx.DefaultBookmarkOptions()
+		testOpts.Position = godocx.PositionEnd
 		if err := u.CreateBookmark(name, testOpts); err != nil {
 			log.Printf("   ERROR: Unexpected failure for valid name '%s': %v", name, err)
 		} else {
@@ -191,8 +191,8 @@ func main() {
 
 	fmt.Println("\n   Invalid bookmark names (should fail):")
 	for _, name := range invalidNames {
-		testOpts := docxupdater.DefaultBookmarkOptions()
-		testOpts.Position = docxupdater.PositionEnd
+		testOpts := godocx.DefaultBookmarkOptions()
+		testOpts.Position = godocx.PositionEnd
 		if err := u.CreateBookmark(name, testOpts); err != nil {
 			fmt.Printf("   ✓ %s (correctly rejected: %v)\n", name, err)
 		} else {

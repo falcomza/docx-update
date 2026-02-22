@@ -38,18 +38,18 @@ Word automatically:
 ### Basic Caption with Chart
 
 ```go
-err := u.InsertChart(docxupdater.ChartOptions{
-    Position: docxupdater.PositionEnd,
+err := u.InsertChart(godocx.ChartOptions{
+    Position: godocx.PositionEnd,
     Title:    "Quarterly Sales",
     Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {Name: "Revenue", Values: []float64{250, 280, 310, 290}},
     },
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionFigure,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionFigure,
         Description: "Quarterly sales performance",
         AutoNumber:  true,
-        Position:    docxupdater.CaptionAfter,
+        Position:    godocx.CaptionAfter,
     },
 })
 ```
@@ -57,9 +57,9 @@ err := u.InsertChart(docxupdater.ChartOptions{
 ### Basic Caption with Table
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Product"},
         {Title: "Sales"},
     },
@@ -67,11 +67,11 @@ err := u.InsertTable(docxupdater.TableOptions{
         {"Product A", "$50,000"},
         {"Product B", "$45,000"},
     },
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionTable,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionTable,
         Description: "Product sales summary",
         AutoNumber:  true,
-        Position:    docxupdater.CaptionBefore,  // Tables typically have captions above
+        Position:    godocx.CaptionBefore,  // Tables typically have captions above
     },
 })
 ```
@@ -94,28 +94,28 @@ err := u.InsertTable(docxupdater.TableOptions{
 
 ```go
 // For charts, diagrams, images
-docxupdater.CaptionFigure
+godocx.CaptionFigure
 
 // For tables
-docxupdater.CaptionTable
+godocx.CaptionTable
 ```
 
 ### Caption Positions
 
 ```go
 // Caption appears before (above) the object
-docxupdater.CaptionBefore
+godocx.CaptionBefore
 
 // Caption appears after (below) the object
-docxupdater.CaptionAfter
+godocx.CaptionAfter
 ```
 
 ### Alignment Options
 
 ```go
-docxupdater.CellAlignLeft    // Left-aligned caption
-docxupdater.CellAlignCenter  // Centered caption
-docxupdater.CellAlignRight   // Right-aligned caption
+godocx.CellAlignLeft    // Left-aligned caption
+godocx.CellAlignCenter  // Centered caption
+godocx.CellAlignRight   // Right-aligned caption
 ```
 
 ## Advanced Examples
@@ -126,14 +126,14 @@ The `DefaultCaptionOptions` function returns sensible defaults:
 
 ```go
 // For figures: AutoNumber=true, Position=CaptionAfter
-captionOpts := docxupdater.DefaultCaptionOptions(docxupdater.CaptionFigure)
+captionOpts := godocx.DefaultCaptionOptions(godocx.CaptionFigure)
 captionOpts.Description = "Sales trend analysis"
 
-err := u.InsertChart(docxupdater.ChartOptions{
-    Position:   docxupdater.PositionEnd,
+err := u.InsertChart(godocx.ChartOptions{
+    Position:   godocx.PositionEnd,
     Title:      "Sales Trend",
     Categories: []string{"Jan", "Feb", "Mar"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {Name: "Sales", Values: []float64{100, 120, 140}},
     },
     Caption: &captionOpts,
@@ -143,9 +143,9 @@ err := u.InsertChart(docxupdater.ChartOptions{
 ### Centered Caption
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Department"},
         {Title: "Budget"},
     },
@@ -153,12 +153,12 @@ err := u.InsertTable(docxupdater.TableOptions{
         {"Marketing", "$100,000"},
         {"R&D", "$200,000"},
     },
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionTable,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionTable,
         Description: "Department budget allocation",
         AutoNumber:  true,
-        Position:    docxupdater.CaptionBefore,
-        Alignment:   docxupdater.CellAlignCenter,
+        Position:    godocx.CaptionBefore,
+        Alignment:   godocx.CellAlignCenter,
     },
 })
 ```
@@ -168,19 +168,19 @@ err := u.InsertTable(docxupdater.TableOptions{
 For cases where you want to control the numbers manually:
 
 ```go
-err := u.InsertChart(docxupdater.ChartOptions{
-    Position:   docxupdater.PositionEnd,
+err := u.InsertChart(godocx.ChartOptions{
+    Position:   godocx.PositionEnd,
     Title:      "Special Chart",
     Categories: []string{"A", "B"},
-    Series: []docxupdater.SeriesData{
+    Series: []godocx.SeriesData{
         {Name: "Data", Values: []float64{10, 20}},
     },
-    Caption: &docxupdater.CaptionOptions{
-        Type:         docxupdater.CaptionFigure,
+    Caption: &godocx.CaptionOptions{
+        Type:         godocx.CaptionFigure,
         Description:  "Appendix chart",
         AutoNumber:   false,
         ManualNumber: 99,  // Custom number
-        Position:     docxupdater.CaptionAfter,
+        Position:     godocx.CaptionAfter,
     },
 })
 ```
@@ -188,12 +188,12 @@ err := u.InsertChart(docxupdater.ChartOptions{
 ### Custom Style
 
 ```go
-err := u.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
+err := u.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
     Columns:  /* ... */,
     Rows:     /* ... */,
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionTable,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionTable,
         Description: "Custom styled caption",
         Style:       "Heading 2",  // Use a different Word style
         AutoNumber:  true,
@@ -243,13 +243,13 @@ Validation is automatically called when inserting charts or tables with captions
 Preview what a caption will look like:
 
 ```go
-opts := docxupdater.CaptionOptions{
-    Type:        docxupdater.CaptionFigure,
+opts := godocx.CaptionOptions{
+    Type:        godocx.CaptionFigure,
     Description: "Sales data",
     AutoNumber:  true,
 }
 
-text := docxupdater.FormatCaptionText(opts)
+text := godocx.FormatCaptionText(opts)
 // Returns: "Figure #: Sales data"
 ```
 

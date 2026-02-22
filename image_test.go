@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 // createTestImage creates a simple test image with the given dimensions
@@ -55,7 +55,7 @@ func TestInsertImageWithWidthOnly(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
@@ -63,11 +63,11 @@ func TestInsertImageWithWidthOnly(t *testing.T) {
 
 	// Insert image with only width specified (400px)
 	// Expected proportional height: 400 * (600/800) = 300px
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		Width:    400,
 		AltText:  "Test Image",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage failed: %v", err)
@@ -106,7 +106,7 @@ func TestInsertImageWithHeightOnly(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
@@ -114,11 +114,11 @@ func TestInsertImageWithHeightOnly(t *testing.T) {
 
 	// Insert image with only height specified (400px)
 	// Expected proportional width: 400 * (1200/800) = 600px
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		Height:   400,
 		AltText:  "Test Image Height",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage failed: %v", err)
@@ -151,19 +151,19 @@ func TestInsertImageWithBothDimensions(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert image with both width and height specified
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		Width:    500,
 		Height:   300,
 		AltText:  "Test Image Both",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage failed: %v", err)
@@ -193,17 +193,17 @@ func TestInsertImageWithNoDimensions(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert image with no dimensions (use actual size)
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		AltText:  "Test Image Actual Size",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage failed: %v", err)
@@ -232,18 +232,18 @@ func TestInsertImageAtBeginning(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert at beginning
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		Width:    300,
 		AltText:  "Beginning Image",
-		Position: docxupdater.PositionBeginning,
+		Position: godocx.PositionBeginning,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage failed: %v", err)
@@ -274,29 +274,29 @@ func TestInsertMultipleImages(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert first image
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     image1Path,
 		Width:    400,
 		AltText:  "First Image",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage 1 failed: %v", err)
 	}
 
 	// Insert second image
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     image2Path,
 		Width:    500,
 		AltText:  "Second Image",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage 2 failed: %v", err)
@@ -337,27 +337,27 @@ func TestInsertImageAfterText(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add anchor text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Insert image after this text",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
 	}
 
 	// Insert image after text
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		Width:    400,
 		AltText:  "After Text Image",
-		Position: docxupdater.PositionAfterText,
+		Position: godocx.PositionAfterText,
 		Anchor:   "Insert image after",
 	})
 	if err != nil {
@@ -396,27 +396,27 @@ func TestInsertImageBeforeText(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Add anchor text
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Insert image before this text",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
 	}
 
 	// Insert image before text
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		Height:   300,
 		AltText:  "Before Text Image",
-		Position: docxupdater.PositionBeforeText,
+		Position: godocx.PositionBeforeText,
 		Anchor:   "Insert image before",
 	})
 	if err != nil {
@@ -451,16 +451,16 @@ func TestInsertImageInvalidPath(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Try to insert non-existent image
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     "nonexistent.png",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err == nil {
 		t.Error("Expected error for non-existent image, got nil")
@@ -475,16 +475,16 @@ func TestInsertImageEmptyPath(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Try to insert with empty path
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     "",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err == nil {
 		t.Error("Expected error for empty path, got nil")
@@ -503,16 +503,16 @@ func TestContentTypeRegistration(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertImage(docxupdater.ImageOptions{
+	err = u.InsertImage(godocx.ImageOptions{
 		Path:     imagePath,
 		Width:    300,
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertImage failed: %v", err)

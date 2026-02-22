@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"archive/zip"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -1445,4 +1446,99 @@ func boolToInt(b bool) int {
 		return 1
 	}
 	return 0
+}
+
+// findNextChartIndex finds the next available chart index by scanning chart files.
+func (u *Updater) findNextChartIndex() int {
+	chartsDir := filepath.Join(u.tempDir, "word", "charts")
+	entries, err := os.ReadDir(chartsDir)
+	if err != nil {
+		return 1
+	}
+
+	maxIndex := 0
+	for _, entry := range entries {
+		if matches := chartFilePattern.FindStringSubmatch(entry.Name()); matches != nil {
+			idx, err := strconv.Atoi(matches[1])
+			if err != nil {
+				continue
+			}
+			if idx > maxIndex {
+				maxIndex = idx
+			}
+		}
+	}
+
+	return maxIndex + 1
+}
+
+// generateChartDrawingXML creates the inline drawing XML for a chart.
+func (u *Updater) generateChartDrawingXML(chartIndex int, relId string) ([]byte, error) {
+	docPrId, err := u.getNextDocPrId()
+	if err != nil {
+		return nil, fmt.Errorf("get next docPr id: %w", err)
+	}
+
+	const template = `<w:p><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0" wp14:anchorId="%08X" wp14:editId="%08X"><wp:extent cx="6099523" cy="3340467"/><wp:effectExtent l="0" t="0" r="15875" b="12700"/><wp:docPr id="%d" name="Chart %d"/><wp:cNvGraphicFramePr/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart"><c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="%s"/></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>`
+
+	anchorId := ChartAnchorIDBase + uint32(chartIndex)*ChartIDIncrement
+	editId := ChartEditIDBase + uint32(chartIndex)*ChartIDIncrement
+
+	return fmt.Appendf(nil, template, anchorId, editId, docPrId, chartIndex, relId), nil
+}
+
+// addChartRelationship appends a Relationship for a chart to document.xml.rels and returns its Id.
+func (u *Updater) addChartRelationship(chartIndex int) (string, error) {
+	relsPath := filepath.Join(u.tempDir, "word", "_rels", "document.xml.rels")
+	raw, err := os.ReadFile(relsPath)
+	if err != nil {
+		return "", fmt.Errorf("read document relationships: %w", err)
+	}
+
+	nextRelId, err := u.getNextDocumentRelId()
+	if err != nil {
+		return "", err
+	}
+
+	insert := fmt.Sprintf("\n  <Relationship Id=\"%s\" Type=\"%s/chart\" Target=\"charts/chart%d.xml\"/>\n", nextRelId, OfficeDocumentNS, chartIndex)
+	closer := []byte("</Relationships>")
+	pos := bytes.LastIndex(raw, closer)
+	if pos == -1 {
+		return "", fmt.Errorf("invalid document.xml.rels: missing </Relationships>")
+	}
+	result := make([]byte, len(raw)+len(insert))
+	n := copy(result, raw[:pos])
+	n += copy(result[n:], []byte(insert))
+	copy(result[n:], raw[pos:])
+
+	if err := os.WriteFile(relsPath, result, 0o644); err != nil {
+		return "", fmt.Errorf("write relationships: %w", err)
+	}
+	return nextRelId, nil
+}
+
+// addContentTypeOverride adds a content type override for a chart in [Content_Types].xml.
+func (u *Updater) addContentTypeOverride(chartIndex int) error {
+	contentTypesPath := filepath.Join(u.tempDir, "[Content_Types].xml")
+	raw, err := os.ReadFile(contentTypesPath)
+	if err != nil {
+		return fmt.Errorf("read content types: %w", err)
+	}
+
+	chartPart := fmt.Sprintf("/word/charts/chart%d.xml", chartIndex)
+	if bytes.Contains(raw, []byte(chartPart)) {
+		return nil // already present
+	}
+
+	insert := fmt.Sprintf("\n  <Override PartName=\"%s\" ContentType=\"%s\"/>\n", chartPart, ChartContentType)
+	closer := []byte("</Types>")
+	pos := bytes.LastIndex(raw, closer)
+	if pos == -1 {
+		return fmt.Errorf("invalid [Content_Types].xml: missing </Types>")
+	}
+	result := make([]byte, len(raw)+len(insert))
+	n := copy(result, raw[:pos])
+	n += copy(result[n:], []byte(insert))
+	copy(result[n:], raw[pos:])
+	return os.WriteFile(contentTypesPath, result, 0o644)
 }

@@ -16,9 +16,9 @@ The table functionality now supports conditional cell formatting, allowing you t
 ### Basic Example
 
 ```go
-err := updater.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := updater.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Service"},
         {Title: "Status"},
     },
@@ -28,7 +28,7 @@ err := updater.InsertTable(docxupdater.TableOptions{
         {"Cache", "Warning"},
     },
     // Define conditional styles
-    ConditionalStyles: map[string]docxupdater.CellStyle{
+    ConditionalStyles: map[string]godocx.CellStyle{
         "Critical": {
             Background: "FF0000", // Red
             FontColor:  "FFFFFF", // White text
@@ -49,9 +49,9 @@ err := updater.InsertTable(docxupdater.TableOptions{
 ### Advanced Example with Row Styles
 
 ```go
-err := updater.InsertTable(docxupdater.TableOptions{
-    Position: docxupdater.PositionEnd,
-    Columns: []docxupdater.ColumnDefinition{
+err := updater.InsertTable(godocx.TableOptions{
+    Position: godocx.PositionEnd,
+    Columns: []godocx.ColumnDefinition{
         {Title: "Metric"},
         {Title: "Rating"},
         {Title: "Value"},
@@ -62,13 +62,13 @@ err := updater.InsertTable(docxupdater.TableOptions{
         {"Disk I/O", "Excellent", "15%"},
     },
     // Row-level styling (applies to all cells by default)
-    RowStyle: docxupdater.CellStyle{
+    RowStyle: godocx.CellStyle{
         FontSize:   20,       // 10pt
         Background: "F2F2F2", // Light gray default
     },
     AlternateRowColor: "E7E6E6",
     // Conditional styles override row styles for matching cells
-    ConditionalStyles: map[string]docxupdater.CellStyle{
+    ConditionalStyles: map[string]godocx.CellStyle{
         "Excellent": {
             Background: "00B050", // Green (overrides row background)
             FontColor:  "FFFFFF",
@@ -115,7 +115,7 @@ When a cell's content matches a conditional style key:
 
 ### Status Indicators
 ```go
-ConditionalStyles: map[string]docxupdater.CellStyle{
+ConditionalStyles: map[string]godocx.CellStyle{
     "Critical":     {Background: "FF0000", FontColor: "FFFFFF", Bold: true},
     "Warning":      {Background: "FFA500", FontColor: "000000"},
     "Non-critical": {Background: "FFD966", FontColor: "000000"},
@@ -125,7 +125,7 @@ ConditionalStyles: map[string]docxupdater.CellStyle{
 
 ### Priority Levels
 ```go
-ConditionalStyles: map[string]docxupdater.CellStyle{
+ConditionalStyles: map[string]godocx.CellStyle{
     "High":   {Background: "FF6B6B", FontColor: "000000", Bold: true},
     "Medium": {Background: "FFE066", FontColor: "000000"},
     "Low":    {Background: "B4C7E7", FontColor: "000000"},
@@ -134,7 +134,7 @@ ConditionalStyles: map[string]docxupdater.CellStyle{
 
 ### Performance Ratings
 ```go
-ConditionalStyles: map[string]docxupdater.CellStyle{
+ConditionalStyles: map[string]godocx.CellStyle{
     "Excellent": {Background: "00B050", FontColor: "FFFFFF", Bold: true},
     "Good":      {Background: "92D050", FontColor: "000000"},
     "Fair":      {Background: "FFC000", FontColor: "000000"},

@@ -1,3 +1,5 @@
+//go:build ignore
+
 package main
 
 import (
@@ -73,7 +75,7 @@ func main() {
 
 		// If it's XML or rels, try to pretty-print it
 		isXML := strings.HasSuffix(f.Name, ".xml") || strings.HasSuffix(f.Name, ".rels")
-		
+
 		if isXML {
 			// Try to parse and pretty-print
 			var doc interface{}
@@ -113,7 +115,7 @@ func main() {
 	fmt.Println("  - Missing namespace declarations")
 	fmt.Println("  - Broken relationship references")
 	fmt.Println("  - Malformed chart or table XML")
-	
+
 	// List key files to check
 	fmt.Println("\nKey files to inspect:")
 	keyFiles := []string{
@@ -121,7 +123,7 @@ func main() {
 		"word/document.xml",
 		"word/_rels/document.xml.rels",
 	}
-	
+
 	for _, kf := range keyFiles {
 		fullPath := filepath.Join(outputDir, kf)
 		if fileExists(fullPath) {

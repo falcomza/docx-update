@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"archive/zip"
@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func TestInsertParagraphAtEnd(t *testing.T) {
@@ -20,17 +20,17 @@ func TestInsertParagraphAtEnd(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
 	// Insert a paragraph at the end
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "This is a test paragraph",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
@@ -56,16 +56,16 @@ func TestInsertParagraphAtBeginning(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Beginning paragraph",
-		Style:    docxupdater.StyleHeading1,
-		Position: docxupdater.PositionBeginning,
+		Style:    godocx.StyleHeading1,
+		Position: godocx.PositionBeginning,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
@@ -93,16 +93,16 @@ func TestInsertParagraphWithFormatting(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:      "Bold and italic text",
-		Style:     docxupdater.StyleNormal,
-		Position:  docxupdater.PositionEnd,
+		Style:     godocx.StyleNormal,
+		Position:  godocx.PositionEnd,
 		Bold:      true,
 		Italic:    true,
 		Underline: true,
@@ -136,27 +136,27 @@ func TestInsertParagraphWithAlignment(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:      "Centered paragraph",
-		Style:     docxupdater.StyleNormal,
-		Alignment: docxupdater.ParagraphAlignCenter,
-		Position:  docxupdater.PositionEnd,
+		Style:     godocx.StyleNormal,
+		Alignment: godocx.ParagraphAlignCenter,
+		Position:  godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
 	}
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:      "Justified paragraph",
-		Style:     docxupdater.StyleNormal,
-		Alignment: docxupdater.ParagraphAlignJustify,
-		Position:  docxupdater.PositionEnd,
+		Style:     godocx.StyleNormal,
+		Alignment: godocx.ParagraphAlignJustify,
+		Position:  godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
@@ -184,16 +184,16 @@ func TestInsertParagraphAtEndBeforeSectPr(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Inserted before sectPr",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
@@ -226,16 +226,16 @@ func TestInsertParagraphWithLineBreaksAndTabs(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Line 1\nLine 2\tTabbed",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionEnd,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionEnd,
 	})
 	if err != nil {
 		t.Fatalf("InsertParagraph failed: %v", err)
@@ -266,16 +266,16 @@ func TestInsertParagraphAfterTextWithSplitRuns(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Inserted After",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionAfterText,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionAfterText,
 		Anchor:   "Hello World",
 	})
 	if err != nil {
@@ -309,16 +309,16 @@ func TestInsertParagraphBeforeTextWithSplitRuns(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Inserted Before",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionBeforeText,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionBeforeText,
 		Anchor:   "Hello World",
 	})
 	if err != nil {
@@ -352,16 +352,16 @@ func TestInsertParagraphAfterTextWithNormalizedWhitespaceAnchor(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Inserted Normalized",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionAfterText,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionAfterText,
 		Anchor:   "Hello\n\tWorld",
 	})
 	if err != nil {
@@ -387,16 +387,16 @@ func TestInsertParagraphAfterTextWithTabBreakAnchor(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "Inserted After TabBreak",
-		Style:    docxupdater.StyleNormal,
-		Position: docxupdater.PositionAfterText,
+		Style:    godocx.StyleNormal,
+		Position: godocx.PositionAfterText,
 		Anchor:   "Alpha Beta Gamma",
 	})
 	if err != nil {
@@ -422,17 +422,17 @@ func TestAddHeading(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	if err := u.AddHeading(1, "Main Title", docxupdater.PositionEnd); err != nil {
+	if err := u.AddHeading(1, "Main Title", godocx.PositionEnd); err != nil {
 		t.Fatalf("AddHeading failed: %v", err)
 	}
 
-	if err := u.AddHeading(2, "Subtitle", docxupdater.PositionEnd); err != nil {
+	if err := u.AddHeading(2, "Subtitle", godocx.PositionEnd); err != nil {
 		t.Fatalf("AddHeading failed: %v", err)
 	}
 
@@ -458,27 +458,27 @@ func TestInsertMultipleParagraphs(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	paragraphs := []docxupdater.ParagraphOptions{
+	paragraphs := []godocx.ParagraphOptions{
 		{
 			Text:     "First paragraph",
-			Style:    docxupdater.StyleHeading1,
-			Position: docxupdater.PositionEnd,
+			Style:    godocx.StyleHeading1,
+			Position: godocx.PositionEnd,
 		},
 		{
 			Text:     "Second paragraph with details",
-			Style:    docxupdater.StyleNormal,
-			Position: docxupdater.PositionEnd,
+			Style:    godocx.StyleNormal,
+			Position: godocx.PositionEnd,
 		},
 		{
 			Text:     "Third paragraph conclusion",
-			Style:    docxupdater.StyleNormal,
-			Position: docxupdater.PositionEnd,
+			Style:    godocx.StyleNormal,
+			Position: godocx.PositionEnd,
 			Bold:     true,
 		},
 	}
@@ -507,15 +507,15 @@ func TestInsertParagraphEmptyText(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.InsertParagraph(docxupdater.ParagraphOptions{
+	err = u.InsertParagraph(godocx.ParagraphOptions{
 		Text:     "",
-		Position: docxupdater.PositionEnd,
+		Position: godocx.PositionEnd,
 	})
 	if err == nil {
 		t.Error("Expected error for empty text, got nil")

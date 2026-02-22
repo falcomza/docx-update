@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import "fmt"
 

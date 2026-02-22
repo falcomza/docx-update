@@ -1,4 +1,4 @@
-package docxupdater_test
+package godocx_test
 
 import (
 	"archive/zip"
@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func TestBasicUpdate(t *testing.T) {
@@ -21,15 +21,15 @@ func TestBasicUpdate(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	data := docxupdater.ChartData{
+	data := godocx.ChartData{
 		Categories: []string{"Device A", "Device B", "Device C"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Critical", Values: []float64{4, 3, 2}},
 			{Name: "Non-critical", Values: []float64{8, 7, 6}},
 		},
@@ -70,15 +70,15 @@ func TestInvalidData(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	err = u.UpdateChart(1, docxupdater.ChartData{
+	err = u.UpdateChart(1, godocx.ChartData{
 		Categories: []string{"A", "B"},
-		Series:     []docxupdater.SeriesData{{Name: "Critical", Values: []float64{1}}},
+		Series:     []godocx.SeriesData{{Name: "Critical", Values: []float64{1}}},
 	})
 	if err == nil {
 		t.Fatalf("expected length mismatch error")
@@ -94,15 +94,15 @@ func TestUpdateWithSharedStringsWorkbook(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	data := docxupdater.ChartData{
+	data := godocx.ChartData{
 		Categories: []string{"Node 1", "Node 2"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Critical", Values: []float64{11, 9}},
 			{Name: "Non-critical", Values: []float64{22, 18}},
 		},
@@ -145,15 +145,15 @@ func TestUpdateSpecificChartInMultiChartDocx(t *testing.T) {
 		t.Fatalf("write input fixture: %v", err)
 	}
 
-	u, err := docxupdater.New(inputPath)
+	u, err := godocx.New(inputPath)
 	if err != nil {
 		t.Fatalf("New failed: %v", err)
 	}
 	defer u.Cleanup()
 
-	data := docxupdater.ChartData{
+	data := godocx.ChartData{
 		Categories: []string{"Router A", "Router B"},
-		Series: []docxupdater.SeriesData{
+		Series: []godocx.SeriesData{
 			{Name: "Critical", Values: []float64{5, 7}},
 			{Name: "Non-critical", Values: []float64{15, 17}},
 		},

@@ -9,7 +9,7 @@ package main
 
 import (
     "log"
-    docx "github.com/falcomza/docx-update"
+    docx "github.com/falcomza/go-docx"
 )
 
 func main() {

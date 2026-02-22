@@ -1,10 +1,12 @@
+//go:build ignore
+
 package main
 
 import (
 	"fmt"
 	"log"
 
-	docxupdater "github.com/falcomza/docx-update"
+	godocx "github.com/falcomza/go-docx"
 )
 
 func main() {
@@ -29,15 +31,15 @@ func main() {
 
 // Example 1: Minimal chart with defaults
 func createMinimalChart() {
-	updater, err := docxupdater.New("templates/template.docx")
+	updater, err := godocx.New("templates/template.docx")
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
 	defer updater.Save("outputs/chart_minimal.docx")
 
-	err = updater.InsertChartExtended(docxupdater.ExtendedChartOptions{
+	err = updater.InsertChartExtended(godocx.ExtendedChartOptions{
 		Categories: []string{"A", "B", "C"},
-		Series: []docxupdater.SeriesOptions{
+		Series: []godocx.SeriesOptions{
 			{
 				Name:   "Sales",
 				Values: []float64{10, 20, 15},
@@ -54,7 +56,7 @@ func createMinimalChart() {
 
 // Example 2: Custom axes with title and formatting
 func createCustomAxisChart() {
-	updater, err := docxupdater.New("templates/template.docx")
+	updater, err := godocx.New("templates/template.docx")
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
@@ -63,11 +65,11 @@ func createCustomAxisChart() {
 	minValue := 0.0
 	maxValue := 100.0
 
-	err = updater.InsertChartExtended(docxupdater.ExtendedChartOptions{
+	err = updater.InsertChartExtended(godocx.ExtendedChartOptions{
 		Title:      "Monthly Performance",
-		ChartKind:  docxupdater.ChartKindColumn,
+		ChartKind:  godocx.ChartKindColumn,
 		Categories: []string{"Jan", "Feb", "Mar", "Apr"},
-		Series: []docxupdater.SeriesOptions{
+		Series: []godocx.SeriesOptions{
 			{
 				Name:   "Target",
 				Values: []float64{80, 85, 90, 95},
@@ -79,11 +81,11 @@ func createCustomAxisChart() {
 				Color:  "ED7D31", // Orange
 			},
 		},
-		CategoryAxis: &docxupdater.AxisOptions{
+		CategoryAxis: &godocx.AxisOptions{
 			Title:        "Month",
 			TitleOverlay: false,
 		},
-		ValueAxis: &docxupdater.AxisOptions{
+		ValueAxis: &godocx.AxisOptions{
 			Title:          "Performance Score",
 			Min:            &minValue,
 			Max:            &maxValue,
@@ -102,32 +104,32 @@ func createCustomAxisChart() {
 
 // Example 3: Data labels and styling
 func createDataLabelsChart() {
-	updater, err := docxupdater.New("templates/template.docx")
+	updater, err := godocx.New("templates/template.docx")
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
 	defer updater.Save("outputs/chart_data_labels.docx")
 
-	err = updater.InsertChartExtended(docxupdater.ExtendedChartOptions{
+	err = updater.InsertChartExtended(godocx.ExtendedChartOptions{
 		Title:      "Product Sales",
-		ChartKind:  docxupdater.ChartKindBar,
+		ChartKind:  godocx.ChartKindBar,
 		Categories: []string{"Product A", "Product B", "Product C", "Product D"},
-		Series: []docxupdater.SeriesOptions{
+		Series: []godocx.SeriesOptions{
 			{
 				Name:   "Q4 2025",
 				Values: []float64{125, 200, 150, 175},
 			},
 		},
-		DataLabels: &docxupdater.DataLabelOptions{
+		DataLabels: &godocx.DataLabelOptions{
 			ShowValue: true,
-			Position:  docxupdater.DataLabelOutsideEnd,
+			Position:  godocx.DataLabelOutsideEnd,
 		},
-		BarChartOptions: &docxupdater.BarChartOptions{
-			Direction: docxupdater.BarDirectionBar, // Horizontal bars
-			Grouping:  docxupdater.BarGroupingClustered,
+		BarChartOptions: &godocx.BarChartOptions{
+			Direction: godocx.BarDirectionBar, // Horizontal bars
+			Grouping:  godocx.BarGroupingClustered,
 		},
-		Properties: &docxupdater.ChartProperties{
-			Style: docxupdater.ChartStyleColorful,
+		Properties: &godocx.ChartProperties{
+			Style: godocx.ChartStyleColorful,
 		},
 	})
 
@@ -140,7 +142,7 @@ func createDataLabelsChart() {
 
 // Example 4: Full customization
 func createFullyCustomizedChart() {
-	updater, err := docxupdater.New("templates/template.docx")
+	updater, err := godocx.New("templates/template.docx")
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
@@ -150,12 +152,12 @@ func createFullyCustomizedChart() {
 	maxVal := 50.0
 	majorUnit := 10.0
 
-	err = updater.InsertChartExtended(docxupdater.ExtendedChartOptions{
+	err = updater.InsertChartExtended(godocx.ExtendedChartOptions{
 		Title:        "Comprehensive Analysis",
 		TitleOverlay: false,
-		ChartKind:    docxupdater.ChartKindLine,
+		ChartKind:    godocx.ChartKindLine,
 		Categories:   []string{"Week 1", "Week 2", "Week 3", "Week 4"},
-		Series: []docxupdater.SeriesOptions{
+		Series: []godocx.SeriesOptions{
 			{
 				Name:        "Series A",
 				Values:      []float64{10, 25, 18, 35},
@@ -171,16 +173,16 @@ func createFullyCustomizedChart() {
 				ShowMarkers: true,
 			},
 		},
-		CategoryAxis: &docxupdater.AxisOptions{
+		CategoryAxis: &godocx.AxisOptions{
 			Title:          "Time Period",
-			Position:       docxupdater.AxisPositionBottom,
-			MajorTickMark:  docxupdater.TickMarkOut,
-			MinorTickMark:  docxupdater.TickMarkNone,
+			Position:       godocx.AxisPositionBottom,
+			MajorTickMark:  godocx.TickMarkOut,
+			MinorTickMark:  godocx.TickMarkNone,
 			MajorGridlines: false,
 		},
-		ValueAxis: &docxupdater.AxisOptions{
+		ValueAxis: &godocx.AxisOptions{
 			Title:          "Value",
-			Position:       docxupdater.AxisPositionLeft,
+			Position:       godocx.AxisPositionLeft,
 			Min:            &minVal,
 			Max:            &maxVal,
 			MajorUnit:      &majorUnit,
@@ -188,13 +190,13 @@ func createFullyCustomizedChart() {
 			MajorGridlines: true,
 			MinorGridlines: true,
 		},
-		Legend: &docxupdater.LegendOptions{
+		Legend: &godocx.LegendOptions{
 			Show:     true,
 			Position: "r",
 			Overlay:  false,
 		},
-		Properties: &docxupdater.ChartProperties{
-			Style:           docxupdater.ChartStyle2,
+		Properties: &godocx.ChartProperties{
+			Style:           godocx.ChartStyle2,
 			RoundedCorners:  false,
 			DisplayBlanksAs: "gap",
 		},
@@ -211,17 +213,17 @@ func createFullyCustomizedChart() {
 
 // Example 5: Financial chart with currency formatting
 func createFinancialChart() {
-	updater, err := docxupdater.New("templates/template.docx")
+	updater, err := godocx.New("templates/template.docx")
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
 	defer updater.Save("outputs/chart_financial.docx")
 
-	err = updater.InsertChartExtended(docxupdater.ExtendedChartOptions{
+	err = updater.InsertChartExtended(godocx.ExtendedChartOptions{
 		Title:      "Quarterly Revenue",
-		ChartKind:  docxupdater.ChartKindColumn,
+		ChartKind:  godocx.ChartKindColumn,
 		Categories: []string{"Q1", "Q2", "Q3", "Q4"},
-		Series: []docxupdater.SeriesOptions{
+		Series: []godocx.SeriesOptions{
 			{
 				Name:   "2025",
 				Values: []float64{100000, 120000, 115000, 140000},
@@ -233,20 +235,20 @@ func createFinancialChart() {
 				Color:  "5B9BD5", // Light Blue
 			},
 		},
-		ValueAxis: &docxupdater.AxisOptions{
+		ValueAxis: &godocx.AxisOptions{
 			Title:        "Revenue ($)",
 			NumberFormat: "$#,##0",
 		},
-		DataLabels: &docxupdater.DataLabelOptions{
+		DataLabels: &godocx.DataLabelOptions{
 			ShowValue: true,
-			Position:  docxupdater.DataLabelOutsideEnd,
+			Position:  godocx.DataLabelOutsideEnd,
 		},
-		BarChartOptions: &docxupdater.BarChartOptions{
-			Grouping: docxupdater.BarGroupingClustered,
+		BarChartOptions: &godocx.BarChartOptions{
+			Grouping: godocx.BarGroupingClustered,
 			GapWidth: 150,
 		},
-		Properties: &docxupdater.ChartProperties{
-			Style: docxupdater.ChartStyle2,
+		Properties: &godocx.ChartProperties{
+			Style: godocx.ChartStyle2,
 		},
 	})
 
@@ -259,7 +261,7 @@ func createFinancialChart() {
 
 // Example 6: Scientific chart with precise gridlines
 func createScientificChart() {
-	updater, err := docxupdater.New("templates/template.docx")
+	updater, err := godocx.New("templates/template.docx")
 	if err != nil {
 		log.Fatalf("Failed to create updater: %v", err)
 	}
@@ -270,11 +272,11 @@ func createScientificChart() {
 	majorUnit := 20.0
 	minorUnit := 5.0
 
-	err = updater.InsertChartExtended(docxupdater.ExtendedChartOptions{
+	err = updater.InsertChartExtended(godocx.ExtendedChartOptions{
 		Title:      "Temperature Over Time",
-		ChartKind:  docxupdater.ChartKindLine,
+		ChartKind:  godocx.ChartKindLine,
 		Categories: []string{"0h", "6h", "12h", "18h", "24h"},
-		Series: []docxupdater.SeriesOptions{
+		Series: []godocx.SeriesOptions{
 			{
 				Name:        "Sensor A",
 				Values:      []float64{20.5, 22.3, 25.7, 23.1, 21.8},
@@ -290,10 +292,10 @@ func createScientificChart() {
 				ShowMarkers: true,
 			},
 		},
-		CategoryAxis: &docxupdater.AxisOptions{
+		CategoryAxis: &godocx.AxisOptions{
 			Title: "Time (hours)",
 		},
-		ValueAxis: &docxupdater.AxisOptions{
+		ValueAxis: &godocx.AxisOptions{
 			Title:          "Temperature (°C)",
 			Min:            &minVal,
 			Max:            &maxVal,
@@ -302,10 +304,10 @@ func createScientificChart() {
 			NumberFormat:   "0.0",
 			MajorGridlines: true,
 			MinorGridlines: true,
-			MajorTickMark:  docxupdater.TickMarkOut,
-			MinorTickMark:  docxupdater.TickMarkOut,
+			MajorTickMark:  godocx.TickMarkOut,
+			MinorTickMark:  godocx.TickMarkOut,
 		},
-		Legend: &docxupdater.LegendOptions{
+		Legend: &godocx.LegendOptions{
 			Show:     true,
 			Position: "r",
 		},

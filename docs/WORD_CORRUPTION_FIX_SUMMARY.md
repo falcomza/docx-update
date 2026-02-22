@@ -184,7 +184,6 @@ go run tools/extract_docx.go suspicious_file.docx extracted/
 ✓ **All chart-related operations now generate Word-compatible files:**
 - `InsertChart()` - Creates new charts with proper formatting
 - `UpdateChart()` - Updates existing charts while preserving formatting
-- `CopyChart()` - Copies charts with proper namespace preservation
 
 ## Additional Resources
 

@@ -117,28 +117,28 @@ type CaptionOptions struct {
 
 **Simple Caption:**
 ```go
-Caption: &docxupdater.CaptionOptions{
-    Type:        docxupdater.CaptionFigure,
+Caption: &godocx.CaptionOptions{
+    Type:        godocx.CaptionFigure,
     Description: "Sales performance chart",
     AutoNumber:  true,
-    Position:    docxupdater.CaptionAfter,
+    Position:    godocx.CaptionAfter,
 }
 ```
 
 **Using Defaults:**
 ```go
-caption := docxupdater.DefaultCaptionOptions(docxupdater.CaptionTable)
+caption := godocx.DefaultCaptionOptions(godocx.CaptionTable)
 caption.Description = "Budget breakdown"
 ```
 
 **Custom Styling:**
 ```go
-Caption: &docxupdater.CaptionOptions{
-    Type:        docxupdater.CaptionTable,
+Caption: &godocx.CaptionOptions{
+    Type:        godocx.CaptionTable,
     Description: "Q4 Results",
     AutoNumber:  true,
-    Position:    docxupdater.CaptionBefore,
-    Alignment:   docxupdater.CellAlignCenter,
+    Position:    godocx.CaptionBefore,
+    Alignment:   godocx.CellAlignCenter,
     Style:       "Heading 2",  // Custom style
 }
 ```
@@ -215,28 +215,28 @@ Potential future additions:
 
 ### Chart with Caption
 ```go
-u.InsertChart(docxupdater.ChartOptions{
+u.InsertChart(godocx.ChartOptions{
     Title: "Sales Trend",
     // ... chart data ...
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionFigure,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionFigure,
         Description: "Monthly sales for 2024",
         AutoNumber:  true,
-        Position:    docxupdater.CaptionAfter,
+        Position:    godocx.CaptionAfter,
     },
 })
 ```
 
 ### Table with Caption
 ```go
-u.InsertTable(docxupdater.TableOptions{
+u.InsertTable(godocx.TableOptions{
     Columns: /* ... */,
     Rows:    /* ... */,
-    Caption: &docxupdater.CaptionOptions{
-        Type:        docxupdater.CaptionTable,
+    Caption: &godocx.CaptionOptions{
+        Type:        godocx.CaptionTable,
         Description: "Product comparison",
         AutoNumber:  true,
-        Position:    docxupdater.CaptionBefore,
+        Position:    godocx.CaptionBefore,
     },
 })
 ```

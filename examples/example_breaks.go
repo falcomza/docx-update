@@ -5,7 +5,7 @@ package main
 import (
 	"log"
 
-	updater "github.com/falcomza/docx-update"
+	updater "github.com/falcomza/go-docx"
 )
 
 func main() {

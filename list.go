@@ -1,4 +1,4 @@
-package docxupdater
+package godocx
 
 import (
 	"bytes"
@@ -268,10 +268,13 @@ func (u *Updater) ensureNumberingRelationship() error {
 	}
 
 	// Find the next available relationship ID
-	nextID := u.getNextRelationshipID(content)
+	relID, err := getNextRelIDFromFile(relsPath)
+	if err != nil {
+		return fmt.Errorf("find next relationship id: %w", err)
+	}
 
 	// Add numbering relationship before </Relationships>
-	numberingRel := fmt.Sprintf(`  <Relationship Id="rId%d" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>`, nextID)
+	numberingRel := fmt.Sprintf(`  <Relationship Id="%s" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/numbering" Target="numbering.xml"/>`, relID)
 	content = strings.Replace(content, "</Relationships>", numberingRel+"\n</Relationships>", 1)
 
 	return os.WriteFile(relsPath, []byte(content), 0o644)
